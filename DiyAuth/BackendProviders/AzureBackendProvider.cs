@@ -4,8 +4,6 @@ using DiyAuth.Utility;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace DiyAuth.BackendProviders
