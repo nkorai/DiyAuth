@@ -7,6 +7,6 @@ namespace DiyAuth.Utility
 	public class Constants
 	{
 		public const string IdentityTableName = "diyidentity";
-		public const string TokensTableName = "diytokens";
+		public const string TokenTableName = "diytoken";
 	}
 }
