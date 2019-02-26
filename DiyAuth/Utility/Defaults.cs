@@ -4,9 +4,10 @@ using System.Text;
 
 namespace DiyAuth.Utility
 {
-	public class Constants
+	public class Defaults
 	{
 		public const string IdentityTableName = "diyidentity";
 		public const string TokenTableName = "diytoken";
+		public const string PartitionName = "default";
 	}
 }

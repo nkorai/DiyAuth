@@ -1,4 +1,5 @@
-﻿using DiyAuth.Models;
+﻿using DiyAuth.BackendEntities;
+using DiyAuth.Models;
 using DiyAuth.Utility;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
@@ -12,8 +13,8 @@ namespace DiyAuth.BackendProviders
 	public class AzureBackendProvider : IBackendProvider
 	{
 		public string ConnectionString { get; set; }
-		public string IdentityTableName { get; set; } = Constants.IdentityTableName;
-		public string TokenTableName { get; set; } = Constants.TokenTableName;
+		public string IdentityTableName { get; set; } = Defaults.IdentityTableName;
+		public string TokenTableName { get; set; } = Defaults.TokenTableName;
 
 		public CloudStorageAccount StorageAccount { get; private set; }
 		public CloudTable IdentityTable { get; private set; }
@@ -41,17 +42,51 @@ namespace DiyAuth.BackendProviders
 			this.TokenTable = this.TableClient.GetTableReference(this.TokenTableName);
 
 			await this.IdentityTable.CreateIfNotExistsAsync().ConfigureAwait(false);
-			await this.IdentityTable.CreateIfNotExistsAsync().ConfigureAwait(false);
+			await this.TokenTable.CreateIfNotExistsAsync().ConfigureAwait(false);
 		}
 
 		public async Task<AuthenticateResult> Authenticate(string token)
 		{
-			throw new NotImplementedException();
+			try
+			{
+				var retrieveOperation = TableOperation.Retrieve(Defaults.PartitionName, token);
+				var retrievedResult = await this.TokenTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
+				var retrievedEntity = ((TableEntityAdapter<AzureTokenEntity>)retrievedResult?.Result)?.OriginalEntity;
+				return new AuthenticateResult
+				{
+					Success = true,
+					IdentityId = retrievedEntity.IdentityId
+				};
+			}
+			catch (StorageException)
+			{
+				return new AuthenticateResult
+				{
+					Success = false
+				};
+			}
 		}
 
 		public async Task<AuthorizeResult> Authorize(string username, string password)
 		{
-			throw new NotImplementedException();
+			try
+			{
+				var retrieveOperation = TableOperation.Retrieve(Defaults.PartitionName, username);
+				var retrievedResult = await this.TokenTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
+				var retrievedEntity = ((TableEntityAdapter<AzureIdentityEntity>)retrievedResult?.Result)?.OriginalEntity;
+				return new AuthorizeResult
+				{
+					Success = true,
+					Token = Security.GenerateToken()
+				};
+			}
+			catch (StorageException)
+			{
+				return new AuthorizeResult
+				{
+					Success = false
+				};
+			}
 		}
 
 		public async Task<CreateIdentityResult> CreateIdentity(string username, string password)
