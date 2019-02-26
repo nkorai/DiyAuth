@@ -91,7 +91,34 @@ namespace DiyAuth.BackendProviders
 
 		public async Task<CreateIdentityResult> CreateIdentity(string username, string password)
 		{
-			throw new NotImplementedException();
+			try
+			{
+				var perUserSalt = Security.GeneratePerUserSalt();
+				var hashedPassword = Security.GeneratePasswordHash(password, perUserSalt);
+				var identityEntity = new AzureIdentityEntity()
+				{
+					IdentityId = Guid.NewGuid(),
+					Username = username,
+					PerUserSalt = perUserSalt,
+					HashedPassword = hashedPassword
+				};
+
+				var createOperation = TableOperation.Insert(identityEntity);
+				var result = await this.TokenTable.ExecuteAsync(createOperation).ConfigureAwait(false);
+
+				return new CreateIdentityResult
+				{
+					Success = true,
+					IdentityId = identityEntity.IdentityId
+				};
+			}
+			catch (StorageException)
+			{
+				return new CreateIdentityResult
+				{
+					Success = false
+				};
+			}
 		}
 	}
 }
