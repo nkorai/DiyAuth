@@ -6,9 +6,9 @@ using Microsoft.WindowsAzure.Storage.Table;
 using System;
 using System.Threading.Tasks;
 
-namespace DiyAuth.BackendProviders
+namespace DiyAuth.AuthenticationProviders
 {
-	public class AzureBackendProvider : IBackendProvider
+	public class AzureAuthenticationProvider : IAuthenticationProvider
 	{
 		public string ConnectionString { get; set; }
 		public string IdentityTableName { get; set; } = Defaults.IdentityTableName;
@@ -19,14 +19,14 @@ namespace DiyAuth.BackendProviders
 		public CloudTable TokenTable { get; private set; }
 		public CloudTableClient TableClient { get; private set; }
 
-		public AzureBackendProvider(string connectionString)
+		public AzureAuthenticationProvider(string storageAccountConnectionString)
 		{
-			this.ConnectionString = connectionString;
+			this.ConnectionString = storageAccountConnectionString;
 		}
 
-		public static async Task<AzureBackendProvider> Create(string connectionString)
+		public static async Task<AzureAuthenticationProvider> Create(string connectionString)
 		{
-			var provider = new AzureBackendProvider(connectionString);
+			var provider = new AzureAuthenticationProvider(connectionString);
 			await provider.Initialize().ConfigureAwait(false);
 			return provider;
 		}
