@@ -11,7 +11,7 @@ namespace DiyAuth.BackendEntities
 	{
 		public Guid IdentityId { get; set; }
 
-		public string Username
+		public string EmailAddress
 		{
 			get
 			{

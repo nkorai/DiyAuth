@@ -49,7 +49,7 @@ namespace DiyAuth.BackendProviders
 			{
 				var retrieveOperation = TableOperation.Retrieve(Defaults.PartitionName, token);
 				var retrievedResult = await this.TokenTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
-				var retrievedEntity = ((TableEntityAdapter<AzureTokenEntity>)retrievedResult?.Result)?.OriginalEntity;
+				var retrievedEntity = (AzureTokenEntity)retrievedResult?.Result;
 				return new AuthenticateResult
 				{
 					Success = true,
@@ -65,13 +65,13 @@ namespace DiyAuth.BackendProviders
 			}
 		}
 
-		public async Task<AuthorizeResult> Authorize(string username, string password)
+		public async Task<AuthorizeResult> Authorize(string emailAddress, string password)
 		{
 			try
 			{
-				var retrieveOperation = TableOperation.Retrieve(Defaults.PartitionName, username);
+				var retrieveOperation = TableOperation.Retrieve(Defaults.PartitionName, emailAddress);
 				var retrievedResult = await this.TokenTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
-				var retrievedEntity = ((TableEntityAdapter<AzureIdentityEntity>)retrievedResult?.Result)?.OriginalEntity;
+				var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
 				return new AuthorizeResult
 				{
 					Success = true,
@@ -87,7 +87,7 @@ namespace DiyAuth.BackendProviders
 			}
 		}
 
-		public async Task<CreateIdentityResult> CreateIdentity(string username, string password)
+		public async Task<CreateIdentityResult> CreateIdentity(string emailAddress, string password)
 		{
 			try
 			{
@@ -96,7 +96,7 @@ namespace DiyAuth.BackendProviders
 				var identityEntity = new AzureIdentityEntity()
 				{
 					IdentityId = Guid.NewGuid(),
-					Username = username,
+					EmailAddress = emailAddress,
 					PerUserSalt = perUserSalt,
 					HashedPassword = hashedPassword
 				};
@@ -117,6 +117,76 @@ namespace DiyAuth.BackendProviders
 					Success = false
 				};
 			}
+		}
+
+		public async Task<ResetPasswordResult> ResetPassword(string emailAddress, string oldPassword, string newPassword)
+		{
+			try
+			{
+				var authorizeResult = await Authorize(emailAddress, oldPassword).ConfigureAwait(false);
+				if (!authorizeResult.Success)
+				{
+					return new ResetPasswordResult
+					{
+						Success = false
+					};
+				}
+
+				var perUserSalt = Security.GeneratePerUserSalt();
+				var hashedPassword = Security.GeneratePasswordHash(newPassword, perUserSalt);
+
+				var retrieveOperation = TableOperation.Retrieve(Defaults.PartitionName, emailAddress);
+				var retrievedResult = await this.TokenTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
+				var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
+
+				retrievedEntity.PerUserSalt = perUserSalt;
+				retrievedEntity.HashedPassword = hashedPassword;
+
+				var setOperation = TableOperation.InsertOrReplace(retrievedEntity);
+				var result = await this.TokenTable.ExecuteAsync(setOperation).ConfigureAwait(false);
+
+				return new ResetPasswordResult
+				{
+					Success = true
+				};
+			}
+			catch (StorageException)
+			{
+				return new ResetPasswordResult
+				{
+					Success = false
+				};
+			}
+		}
+
+		public Task GenerateTokenForIdentity()
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task DeleteExpiredTokens()
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task DeleteToken()
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task DeleteIdentity()
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<string> GenerateVerificationToken()
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task VerifyIdentity(string verificationToken)
+		{
+			throw new NotImplementedException();
 		}
 	}
 }
