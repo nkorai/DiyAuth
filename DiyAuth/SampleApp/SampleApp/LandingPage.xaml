@@ -9,6 +9,22 @@
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
     <Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="*"/>
+			<ColumnDefinition Width="*"/>
+			<ColumnDefinition Width="*"/>
+		</Grid.ColumnDefinitions>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
+		<StackPanel Grid.Row="1" Grid.Column="1">
+			<TextBlock Text="Logged in with IdentityId:" FontWeight="Bold"></TextBlock>
+			<TextBlock Name="IdentityIdTextBlock"></TextBlock>
 
+			<Button Click="SignOut_Click">Delete Identity and Sign Out</Button>
+			<Button Click="DeleteIdentityAndSignOut_Click">Delete Identity and Sign Out</Button>
+		</StackPanel>
     </Grid>
 </Page>

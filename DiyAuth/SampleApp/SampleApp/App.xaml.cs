@@ -26,6 +26,7 @@ namespace SampleApp
 	sealed partial class App : Application
 	{
 		public static AzureAuthenticationProvider Authenticator;
+		public static string ConnectionString;
 		public static string Token;
 		public static Guid? IdentityId;
 
@@ -37,6 +38,13 @@ namespace SampleApp
 		{
 			this.InitializeComponent();
 			this.Suspending += OnSuspending;
+
+			var localSettings =	Windows.Storage.ApplicationData.Current.LocalSettings;
+			var connectionStringExists = localSettings.Values.ContainsKey("ConnectionString");
+			if (connectionStringExists)
+			{
+				ConnectionString = localSettings.Values["ConnectionString"] as string;
+			}
 		}
 
 

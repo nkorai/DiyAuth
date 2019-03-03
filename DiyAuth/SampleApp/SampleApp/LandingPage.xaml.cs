@@ -26,5 +26,18 @@ namespace SampleApp
 		{
 			this.InitializeComponent();
 		}
+
+		private void SignOut_Click(object sender, RoutedEventArgs e)
+		{
+			App.Token = null;
+			App.IdentityId = null;
+			this.Frame.Navigate(typeof(LoginPage));
+		}
+
+		private async void DeleteIdentityAndSignOut_Click(object sender, RoutedEventArgs e)
+		{
+			await App.Authenticator.DeleteIdentity(App.IdentityId.Value);
+			SignOut_Click(sender, e);
+		}
 	}
 }

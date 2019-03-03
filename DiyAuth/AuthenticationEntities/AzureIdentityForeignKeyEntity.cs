@@ -24,7 +24,7 @@ namespace DiyAuth.AuthenticationEntities
 
 		public AzureIdentityForeignKeyEntity()
 		{
-			this.PartitionKey = Defaults.IdentityForeignKeyPartitionName;
+			this.PartitionKey = Constants.PartitionNames.IdentityForeignKeyPartitionName;
 		}
 	}
 }

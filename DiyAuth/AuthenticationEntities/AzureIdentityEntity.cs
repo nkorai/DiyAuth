@@ -24,7 +24,7 @@ namespace DiyAuth.AuthenticationEntities
 
 		public AzureIdentityEntity()
 		{
-			this.PartitionKey = Defaults.DefaultPartitionName;
+			this.PartitionKey = Constants.PartitionNames.DefaultPartitionName;
 		}
 	}
 }
