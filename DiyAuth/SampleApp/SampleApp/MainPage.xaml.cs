@@ -29,7 +29,7 @@ namespace SampleApp
 		private async void Next_Click(object sender, RoutedEventArgs e)
 		{
 			var azureAuthenticator = await Authenticator.GetAzureAuthenticator(ConnectionStringTextBlock.Text);
-			Cache.Authenticator = azureAuthenticator;
+			App.Authenticator = azureAuthenticator;
 			this.Frame.Navigate(typeof(CreateUserPage));
 		}
 	}

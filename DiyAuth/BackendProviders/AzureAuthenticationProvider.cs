@@ -70,12 +70,23 @@ namespace DiyAuth.AuthenticationProviders
 			try
 			{
 				var retrieveOperation = TableOperation.Retrieve(Defaults.PartitionName, emailAddress);
-				var retrievedResult = await this.TokenTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
+				var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
 				var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
+
+				var token = Security.GenerateToken();
+				var tokenEntity = new AzureTokenEntity
+				{
+					IdentityId = retrievedEntity.IdentityId,
+					Token = token
+				};
+
+				var createOperation = TableOperation.Insert(tokenEntity);
+				var result = await this.TokenTable.ExecuteAsync(createOperation).ConfigureAwait(false);
 				return new AuthorizeResult
 				{
 					Success = true,
-					Token = Security.GenerateToken()
+					IdentityId = retrievedEntity.IdentityId,
+					Token = token
 				};
 			}
 			catch (StorageException)
@@ -91,6 +102,7 @@ namespace DiyAuth.AuthenticationProviders
 		{
 			try
 			{
+				// Identity generation
 				var perUserSalt = Security.GeneratePerUserSalt();
 				var hashedPassword = Security.GeneratePasswordHash(password, perUserSalt);
 				var identityEntity = new AzureIdentityEntity()
@@ -102,12 +114,24 @@ namespace DiyAuth.AuthenticationProviders
 				};
 
 				var createOperation = TableOperation.Insert(identityEntity);
-				var result = await this.TokenTable.ExecuteAsync(createOperation).ConfigureAwait(false);
+				await this.IdentityTable.ExecuteAsync(createOperation).ConfigureAwait(false);
+
+				// Token generation
+				var token = Security.GenerateToken();
+				var tokenEntity = new AzureTokenEntity
+				{
+					IdentityId = identityEntity.IdentityId,
+					Token = token
+				};
+
+				var createTokenOperation = TableOperation.Insert(tokenEntity);
+				await this.TokenTable.ExecuteAsync(createOperation).ConfigureAwait(false);
 
 				return new CreateIdentityResult
 				{
 					Success = true,
-					IdentityId = identityEntity.IdentityId
+					IdentityId = identityEntity.IdentityId,
+					Token = tokenEntity.Token
 				};
 			}
 			catch (StorageException)
@@ -117,6 +141,19 @@ namespace DiyAuth.AuthenticationProviders
 					Success = false
 				};
 			}
+		}
+
+		public async Task<bool> CheckIdentityExists(string emailAddress)
+		{
+			var retrieveOperation = TableOperation.Retrieve(Defaults.PartitionName, emailAddress);
+			var retrievedResult = await this.TokenTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
+			var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
+			if (retrievedEntity == null)
+			{
+				return false;
+			}
+
+			return true;
 		}
 
 		public async Task<ResetPasswordResult> ResetPassword(string emailAddress, string oldPassword, string newPassword)

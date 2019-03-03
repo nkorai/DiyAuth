@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Windows.Input;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
@@ -25,6 +26,47 @@ namespace SampleApp
 		public CreateUserPage()
 		{
 			this.InitializeComponent();
+		}
+
+		private async void NavigateToLoginPage()
+		{
+
+		}
+
+		private async void CreateIdentity_Click(object sender, RoutedEventArgs e)
+		{
+			try
+			{
+				var identityAlreadyExists = await App.Authenticator.CheckIdentityExists(EmailAddressTextBlock.Text);
+				if (identityAlreadyExists)
+				{
+					ICommand navigateToLoginCommand = null;
+					var identityExistsDialog = new ContentDialog
+					{
+						Title = "Error",
+						Content = $"The identity {EmailAddressTextBlock.Text} already exists. Navigating you to the Login page",
+						CloseButtonText = "Ok",
+						CloseButtonCommand = navigateToLoginCommand
+					};
+
+					var result = await identityExistsDialog.ShowAsync();
+				}
+				else
+				{
+					await App.Authenticator.CreateIdentity(EmailAddressTextBlock.Text, PasswordTextBlock.Text);
+				}
+			}
+			catch (Exception ex)
+			{
+				var unhandledErrorDialog = new ContentDialog
+				{
+					Title = "Error",
+					Content = "An unhandled error occured. Exception: " + ex.ToString(),
+					CloseButtonText = "Ok"
+				};
+
+				var result = await unhandledErrorDialog.ShowAsync();
+			}
 		}
 	}
 }
