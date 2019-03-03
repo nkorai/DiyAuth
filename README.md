@@ -1,6 +1,6 @@
 # DiyAuth
 ## What is DiyAuth?
-DIY Auth is a project aimed at placing the control and responsibility of user authentication in your hands. It implements a simple authorization and authentication scheme following industry best practices that is plug-and-play to help you jump start your next project. Furthermore it stores your user's authentication data in your network, allowing you to be free of relying on third party services to manage your data. 
+DIY Auth is a project aimed at placing the control and responsibility of user authentication in your hands. It implements a simple authorization and authentication scheme following industry best practices that is plug-and-play to help you jump start your next project. Furthermore it stores your user's authentication data in your cloud instance, allowing you to be free of relying on third party services to manage your data. 
 
 ## Why is there a need for it?
 Everytime I want to start a new side project I invariably have to rebuild the ability to allow users to login. In the past I've used services like Parse (RIP) to do the authentication for me but relying on a centralized third-party service to accomplish your authentication and authorization isn't the best because:
