@@ -1,4 +1,4 @@
-﻿//using DiyAuth;
+﻿using DiyAuth;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,8 +14,6 @@ using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=402352&clcid=0x409
-
 namespace SampleApp
 {
 	/// <summary>
@@ -30,9 +28,9 @@ namespace SampleApp
 
 		private async void Next_Click(object sender, RoutedEventArgs e)
 		{
-			//var azureAuthenticator = await Authenticator.GetAzureAuthenticator(ConnectionStringTextBlock.Text);
-			//Cache.Authenticator = azureAuthenticator;
-			//this.Frame.Navigate(typeof(CreateUserPage));
+			var azureAuthenticator = await Authenticator.GetAzureAuthenticator(ConnectionStringTextBlock.Text);
+			Cache.Authenticator = azureAuthenticator;
+			this.Frame.Navigate(typeof(CreateUserPage));
 		}
 	}
 }

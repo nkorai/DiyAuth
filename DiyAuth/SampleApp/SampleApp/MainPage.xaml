@@ -17,14 +17,13 @@
 		</Grid.ColumnDefinitions>
 		<Grid.RowDefinitions>
 			<RowDefinition Height="*"/>
-			<RowDefinition Height="30px"/>
+			<RowDefinition Height="50px"/>
 			<RowDefinition Height="100px"/>
 			<RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
-
-		<Border Grid.ColumnSpan="4" Grid.RowSpan="4" Background="#1f3d7a"></Border>
-		<TextBlock Name="ConnectionStringTextBlock" Grid.Row="1" Grid.Column="1" Text="Connection String" Foreground="White" TextAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"></TextBlock>
-		<TextBox Grid.Row="1" Grid.Column="2"></TextBox>
-		<Button Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Click="Next_Click">Next</Button>
+		
+		<TextBlock Grid.Row="1" Grid.Column="1" Text="Connection String" TextAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"></TextBlock>
+		<TextBox Name="ConnectionStringTextBlock" VerticalAlignment="Center" Height="30px" Grid.Row="1" Grid.Column="2"></TextBox>
+		<Button Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Click="Next_Click" HorizontalAlignment="Center">Next</Button>
 	</Grid>
 </Page>
