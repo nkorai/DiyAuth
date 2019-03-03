@@ -73,6 +73,17 @@ namespace DiyAuth.AuthenticationProviders
 				var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
 				var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
 
+				// Check if provided password is valid
+				var passwordHash = Security.GeneratePasswordHash(password, retrievedEntity.PerUserSalt);
+				if (passwordHash != retrievedEntity.HashedPassword)
+				{
+					return new AuthorizeResult
+					{
+						Success = false
+					};
+				}
+
+				// Genearte, store and return token
 				var token = Security.GenerateToken();
 				var tokenEntity = new AzureTokenEntity
 				{

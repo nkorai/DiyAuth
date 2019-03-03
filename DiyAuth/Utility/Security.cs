@@ -12,9 +12,9 @@ namespace DiyAuth.Utility
 		{
 			using (var rng = new RNGCryptoServiceProvider())
 			{
-				var buffer = new byte[128];
+				var buffer = new byte[64];
 				rng.GetBytes(buffer);
-				return Encoding.ASCII.GetString(buffer);
+				return Convert.ToBase64String(buffer);
 			}
 		}
 
@@ -35,7 +35,7 @@ namespace DiyAuth.Utility
 			{
 				var token = new byte[199];
 				rng.GetBytes(token);
-				return Encoding.ASCII.GetString(token);
+				return Convert.ToBase64String(token);
 			}
 		}
 	}
