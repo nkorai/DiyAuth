@@ -4,6 +4,7 @@ using DiyAuth.Utility;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DiyAuth.AuthenticationProviders
@@ -156,15 +157,9 @@ namespace DiyAuth.AuthenticationProviders
 
 		public async Task<bool> CheckIdentityExists(string emailAddress)
 		{
-			var retrieveOperation = TableOperation.Retrieve(Defaults.PartitionName, emailAddress);
-			var retrievedResult = await this.TokenTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
-			var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
-			if (retrievedEntity == null)
-			{
-				return false;
-			}
-
-			return true;
+			var query = new TableQuery<AzureIdentityEntity>().Where(TableQuery.GenerateFilterCondition("EmailAddress", QueryComparisons.Equal, emailAddress));
+			var seg = await this.IdentityTable.ExecuteQuerySegmentedAsync<AzureIdentityEntity>(query, null).ConfigureAwait(false);
+			return seg.Results.Any();
 		}
 
 		public async Task<ResetPasswordResult> ResetPassword(string emailAddress, string oldPassword, string newPassword)
