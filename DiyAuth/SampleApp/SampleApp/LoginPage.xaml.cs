@@ -21,39 +21,33 @@ namespace SampleApp
 	/// <summary>
 	/// An empty page that can be used on its own or navigated to within a Frame.
 	/// </summary>
-	public sealed partial class CreateUserPage : Page
+	public sealed partial class LoginPage : Page
 	{
-		public CreateUserPage()
+		public LoginPage()
 		{
 			this.InitializeComponent();
-		}
-
-		private async void NavigateToLoginPage()
-		{
-
 		}
 
 		private async void CreateIdentity_Click(object sender, RoutedEventArgs e)
 		{
 			try
 			{
-				var identityAlreadyExists = await App.Authenticator.CheckIdentityExists(EmailAddressTextBlock.Text);
+				var identityAlreadyExists = await App.Authenticator.CheckIdentityExists(CreateEmailAddressTextBlock.Text);
 				if (identityAlreadyExists)
 				{
-					ICommand navigateToLoginCommand = null;
 					var identityExistsDialog = new ContentDialog
 					{
 						Title = "Error",
-						Content = $"The identity {EmailAddressTextBlock.Text} already exists. Navigating you to the Login page",
-						CloseButtonText = "Ok",
-						CloseButtonCommand = navigateToLoginCommand
+						Content = $"The identity {CreateEmailAddressTextBlock.Text} already exists. Please login.",
+						CloseButtonText = "Ok"
 					};
 
 					var result = await identityExistsDialog.ShowAsync();
 				}
 				else
 				{
-					var result = await App.Authenticator.CreateIdentity(EmailAddressTextBlock.Text, PasswordTextBlock.Text);
+					var result = await App.Authenticator.CreateIdentity(CreateEmailAddressTextBlock.Text, CreatePasswordTextBlock.Text);
+					//TODO: navigate to landing page
 				}
 			}
 			catch (Exception ex)

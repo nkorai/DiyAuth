@@ -1,18 +1,7 @@
 ﻿using DiyAuth;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 
 namespace SampleApp
 {
@@ -30,7 +19,7 @@ namespace SampleApp
 		{
 			var azureAuthenticator = await Authenticator.GetAzureAuthenticator(ConnectionStringTextBlock.Text);
 			App.Authenticator = azureAuthenticator;
-			this.Frame.Navigate(typeof(CreateUserPage));
+			this.Frame.Navigate(typeof(LoginPage));
 		}
 	}
 }
