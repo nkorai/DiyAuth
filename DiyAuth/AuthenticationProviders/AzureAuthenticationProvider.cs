@@ -48,7 +48,7 @@ namespace DiyAuth.AuthenticationProviders
 		{
 			try
 			{
-				var retrieveOperation = TableOperation.Retrieve(Defaults.DefaultPartitionName, token);
+				var retrieveOperation = TableOperation.Retrieve<AzureTokenEntity>(Defaults.DefaultPartitionName, token);
 				var retrievedResult = await this.TokenTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
 				var retrievedEntity = (AzureTokenEntity)retrievedResult?.Result;
 				return new AuthenticateResult
@@ -70,13 +70,26 @@ namespace DiyAuth.AuthenticationProviders
 		{
 			try
 			{
-				var retrieveOperation = TableOperation.Retrieve(Defaults.DefaultPartitionName, emailAddress);
+				// Check to see if email exists
+				var retrieveOperation = TableOperation.Retrieve<AzureIdentityForeignKeyEntity>(Defaults.IdentityForeignKeyPartitionName, emailAddress);
 				var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
-				var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
+				var retrievedEntity = (AzureIdentityForeignKeyEntity)retrievedResult?.Result;
+				if (retrievedEntity == null)
+				{
+					return new AuthorizeResult
+					{
+						Success = false
+					};
+				}
+
+				// Retrieve IdentityEntity
+				var retrieveIdentityOperation = TableOperation.Retrieve<AzureIdentityEntity>(Defaults.DefaultPartitionName, retrievedEntity.IdentityId.ToString());
+				var retrievedIdentityResult = await this.IdentityTable.ExecuteAsync(retrieveIdentityOperation).ConfigureAwait(false);
+				var retrievedIdentityEntity = (AzureIdentityEntity)retrievedIdentityResult?.Result;
 
 				// Check if provided password is valid
-				var passwordHash = Security.GeneratePasswordHash(password, retrievedEntity.PerUserSalt);
-				if (passwordHash != retrievedEntity.HashedPassword)
+				var passwordMatches = Security.PasswordMatches(retrievedIdentityEntity.PerUserSalt, password, retrievedIdentityEntity.HashedPassword);
+				if (!passwordMatches)
 				{
 					return new AuthorizeResult
 					{
@@ -126,7 +139,19 @@ namespace DiyAuth.AuthenticationProviders
 				};
 
 				var createIdentityOperation = TableOperation.Insert(identityEntity);
+
+				// Identity foreign key generation
+				var foreignKey = new AzureIdentityForeignKeyEntity
+				{
+					IdentityId = identityEntity.IdentityId,
+					EmailAddress = emailAddress,
+				};
+
+				var createForeignKeyOperation = TableOperation.Insert(foreignKey);
+
+				// Insert identity information
 				await this.IdentityTable.ExecuteAsync(createIdentityOperation).ConfigureAwait(false);
+				await this.IdentityTable.ExecuteAsync(createForeignKeyOperation).ConfigureAwait(false);
 
 				// Token generation
 				var token = Security.GenerateToken();
@@ -157,9 +182,22 @@ namespace DiyAuth.AuthenticationProviders
 
 		public async Task<bool> CheckIdentityExists(string emailAddress)
 		{
-			var query = new TableQuery<AzureIdentityEntity>().Where(TableQuery.GenerateFilterCondition("EmailAddress", QueryComparisons.Equal, emailAddress));
-			var seg = await this.IdentityTable.ExecuteQuerySegmentedAsync<AzureIdentityEntity>(query, null).ConfigureAwait(false);
-			return seg.Results.Any();
+			try
+			{
+				var retrieveOperation = TableOperation.Retrieve<AzureIdentityForeignKeyEntity>(Defaults.IdentityForeignKeyPartitionName, emailAddress);
+				var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
+				var retrievedEntity = (AzureIdentityForeignKeyEntity)retrievedResult?.Result;
+				if (retrievedEntity == null)
+				{
+					return false;
+				}
+
+				return true;
+			}
+			catch (StorageException)
+			{
+				return false;
+			}
 		}
 
 		public async Task<ResetPasswordResult> ResetPassword(string emailAddress, string oldPassword, string newPassword)
@@ -178,7 +216,7 @@ namespace DiyAuth.AuthenticationProviders
 				var perUserSalt = Security.GeneratePerUserSalt();
 				var hashedPassword = Security.GeneratePasswordHash(newPassword, perUserSalt);
 
-				var retrieveOperation = TableOperation.Retrieve(Defaults.DefaultPartitionName, emailAddress);
+				var retrieveOperation = TableOperation.Retrieve<AzureIdentityEntity>(Defaults.DefaultPartitionName, emailAddress);
 				var retrievedResult = await this.TokenTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
 				var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
 
