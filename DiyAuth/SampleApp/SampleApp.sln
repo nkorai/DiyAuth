@@ -5,6 +5,8 @@ VisualStudioVersion = 15.0.28307.421
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SampleApp", "SampleApp\SampleApp.csproj", "{3F25E2E1-36B6-4B15-82C9-A0FE867C90B3}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DiyAuth", "..\DiyAuth.csproj", "{6BDBA02F-4518-439F-9E87-4ADD122EC760}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|ARM = Debug|ARM
@@ -41,6 +43,16 @@ Global
 		{3F25E2E1-36B6-4B15-82C9-A0FE867C90B3}.Release|x86.ActiveCfg = Release|x86
 		{3F25E2E1-36B6-4B15-82C9-A0FE867C90B3}.Release|x86.Build.0 = Release|x86
 		{3F25E2E1-36B6-4B15-82C9-A0FE867C90B3}.Release|x86.Deploy.0 = Release|x86
+		{6BDBA02F-4518-439F-9E87-4ADD122EC760}.Debug|ARM.ActiveCfg = Debug|x64
+		{6BDBA02F-4518-439F-9E87-4ADD122EC760}.Debug|ARM64.ActiveCfg = Debug|x64
+		{6BDBA02F-4518-439F-9E87-4ADD122EC760}.Debug|x64.ActiveCfg = Debug|x64
+		{6BDBA02F-4518-439F-9E87-4ADD122EC760}.Debug|x64.Build.0 = Debug|x64
+		{6BDBA02F-4518-439F-9E87-4ADD122EC760}.Debug|x86.ActiveCfg = Debug|x64
+		{6BDBA02F-4518-439F-9E87-4ADD122EC760}.Release|ARM.ActiveCfg = Release|x64
+		{6BDBA02F-4518-439F-9E87-4ADD122EC760}.Release|ARM64.ActiveCfg = Release|x64
+		{6BDBA02F-4518-439F-9E87-4ADD122EC760}.Release|x64.ActiveCfg = Release|x64
+		{6BDBA02F-4518-439F-9E87-4ADD122EC760}.Release|x64.Build.0 = Release|x64
+		{6BDBA02F-4518-439F-9E87-4ADD122EC760}.Release|x86.ActiveCfg = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

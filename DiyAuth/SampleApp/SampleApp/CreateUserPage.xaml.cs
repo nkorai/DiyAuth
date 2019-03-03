@@ -53,7 +53,7 @@ namespace SampleApp
 				}
 				else
 				{
-					await App.Authenticator.CreateIdentity(EmailAddressTextBlock.Text, PasswordTextBlock.Text);
+					var result = await App.Authenticator.CreateIdentity(EmailAddressTextBlock.Text, PasswordTextBlock.Text);
 				}
 			}
 			catch (Exception ex)

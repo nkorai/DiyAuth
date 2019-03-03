@@ -158,12 +158,15 @@
     </Page>
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="DiyAuth">
-      <Version>1.0.0-alpha1.0.3</Version>
-    </PackageReference>
     <PackageReference Include="Microsoft.NETCore.UniversalWindowsPlatform">
       <Version>6.1.9</Version>
     </PackageReference>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\DiyAuth.csproj">
+      <Project>{6bdba02f-4518-439f-9e87-4add122ec760}</Project>
+      <Name>DiyAuth</Name>
+    </ProjectReference>
   </ItemGroup>
   <PropertyGroup Condition=" '$(VisualStudioVersion)' == '' or '$(VisualStudioVersion)' &lt; '14.0' ">
     <VisualStudioVersion>14.0</VisualStudioVersion>

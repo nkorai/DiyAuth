@@ -1,28 +1,24 @@
 ﻿using DiyAuth.Utility;
-using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using System;
-using System.Collections.Generic;
-using System.Text;
 
 namespace DiyAuth.BackendEntities
 {
 	public class AzureIdentityEntity : TableEntity, IIdentityEntity
 	{
-		public Guid IdentityId { get; set; }
-
-		public string EmailAddress
+		public Guid IdentityId
 		{
 			get
 			{
-				return this.RowKey;
+				return Guid.Parse(this.RowKey);
 			}
 			set
 			{
-				this.RowKey = value;
+				this.RowKey = value.ToString();
 			}
 		}
 
+		public string EmailAddress { get; set; }
 		public string HashedPassword { get; set; }
 		public string PerUserSalt { get; set; }
 

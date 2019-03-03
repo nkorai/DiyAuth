@@ -3,19 +3,30 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace DiyAuth.Utility
 {
 	public class Security
 	{
+		private const int SaltSize = 22;
 		public static string GeneratePerUserSalt()
 		{
+			var chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890".ToCharArray();
+			var saltArray = new byte[SaltSize];
 			using (var rng = new RNGCryptoServiceProvider())
 			{
-				var buffer = new byte[64];
-				rng.GetBytes(buffer);
-				return Convert.ToBase64String(buffer);
+				rng.GetBytes(saltArray);
 			}
+
+			var result = new StringBuilder(SaltSize);
+			foreach (var b in saltArray)
+			{
+				result.Append(chars[b % (chars.Length)]);
+			}
+
+			var salt = "$2a$04$" + result.ToString();
+			return salt;
 		}
 
 		public static string GeneratePasswordHash(string password, string salt)
@@ -33,9 +44,11 @@ namespace DiyAuth.Utility
 		{
 			using (var rng = new RNGCryptoServiceProvider())
 			{
-				var token = new byte[199];
-				rng.GetBytes(token);
-				return Convert.ToBase64String(token);
+				var tokenArray = new byte[199];
+				rng.GetBytes(tokenArray);
+				var token = Convert.ToBase64String(tokenArray);
+				token = Regex.Replace(token, "[\\/#?]+", "");
+				return token;
 			}
 		}
 	}

@@ -124,8 +124,8 @@ namespace DiyAuth.AuthenticationProviders
 					HashedPassword = hashedPassword
 				};
 
-				var createOperation = TableOperation.Insert(identityEntity);
-				await this.IdentityTable.ExecuteAsync(createOperation).ConfigureAwait(false);
+				var createIdentityOperation = TableOperation.Insert(identityEntity);
+				await this.IdentityTable.ExecuteAsync(createIdentityOperation).ConfigureAwait(false);
 
 				// Token generation
 				var token = Security.GenerateToken();
@@ -136,7 +136,7 @@ namespace DiyAuth.AuthenticationProviders
 				};
 
 				var createTokenOperation = TableOperation.Insert(tokenEntity);
-				await this.TokenTable.ExecuteAsync(createOperation).ConfigureAwait(false);
+				await this.TokenTable.ExecuteAsync(createTokenOperation).ConfigureAwait(false);
 
 				return new CreateIdentityResult
 				{
