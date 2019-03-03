@@ -200,7 +200,7 @@ namespace DiyAuth.AuthenticationProviders
 			}
 		}
 
-		public async Task<ResetPasswordResult> ResetPassword(string emailAddress, string oldPassword, string newPassword)
+		public async Task<ResetPasswordResult> ChangePassword(string emailAddress, string oldPassword, string newPassword)
 		{
 			try
 			{

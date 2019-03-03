@@ -13,12 +13,13 @@ namespace DiyAuth.AuthenticationProviders
 		Task<CreateIdentityResult> CreateIdentity(string emailAddress, string password);
 		Task<AuthorizeResult> Authorize(string emailAddress, string password);
 		Task<AuthenticateResult> Authenticate(string token);
-		Task<ResetPasswordResult> ResetPassword(string emailAddress, string oldPassword, string newPassword);
 
-		Task GenerateTokenForIdentity();
-		Task DeleteExpiredTokens();
-		Task DeleteToken();
-		Task DeleteIdentity();
+		Task<ResetPasswordResult> ChangePassword(string emailAddress, string oldPassword, string newPassword);
+		Task GenerateTokenForIdentity(Guid identityId);
+		Task DeleteExpiredTokens(DateTime expiryDateTime);
+		Task DeleteToken(string token);
+		Task DeleteIdentity(Guid identityId);
+
 		Task<string> GenerateVerificationToken();
 		Task VerifyIdentity(string verificationToken);
 	}
