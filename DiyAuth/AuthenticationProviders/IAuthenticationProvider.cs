@@ -15,12 +15,8 @@ namespace DiyAuth.AuthenticationProviders
 		Task<AuthenticateResult> Authenticate(string token);
 
 		Task<ResetPasswordResult> ChangePassword(string emailAddress, string oldPassword, string newPassword);
-		Task GenerateTokenForIdentity(Guid identityId);
-		Task DeleteExpiredTokens(DateTime expiryDateTime);
+		Task<AuthorizeResult> GenerateTokenForIdentityId(Guid identityId);
 		Task DeleteToken(string token);
 		Task DeleteIdentity(Guid identityId);
-
-		Task<string> GenerateVerificationToken();
-		Task VerifyIdentity(string verificationToken);
 	}
 }

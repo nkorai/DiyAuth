@@ -240,32 +240,36 @@ namespace DiyAuth.AuthenticationProviders
 			}
 		}
 
-		public Task GenerateTokenForIdentity()
+		public async Task<AuthorizeResult> GenerateTokenForIdentityId(Guid identityId)
+		{
+			var retrieveOperation = TableOperation.Retrieve<AzureIdentityEntity>(Defaults.IdentityTableName, identityId.ToString());
+			var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
+			var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
+
+			var token = Security.GenerateToken();
+			var tokenEntity = new AzureTokenEntity
+			{
+				IdentityId = retrievedEntity.IdentityId,
+				Token = token
+			};
+
+			var createTokenOperation = TableOperation.Insert(tokenEntity);
+			await this.TokenTable.ExecuteAsync(createTokenOperation).ConfigureAwait(false);
+
+			return new AuthorizeResult
+			{
+				Success = true, 
+				Token = token,
+				IdentityId = identityId
+			};
+		}
+
+		public Task DeleteToken(string token)
 		{
 			throw new NotImplementedException();
 		}
 
-		public Task DeleteExpiredTokens()
-		{
-			throw new NotImplementedException();
-		}
-
-		public Task DeleteToken()
-		{
-			throw new NotImplementedException();
-		}
-
-		public Task DeleteIdentity()
-		{
-			throw new NotImplementedException();
-		}
-
-		public Task<string> GenerateVerificationToken()
-		{
-			throw new NotImplementedException();
-		}
-
-		public Task VerifyIdentity(string verificationToken)
+		public Task DeleteIdentity(Guid identityId)
 		{
 			throw new NotImplementedException();
 		}
