@@ -25,7 +25,7 @@ namespace DiyAuth.Utility
 				result.Append(chars[b % (chars.Length)]);
 			}
 
-			var salt = "$2a$04$" + result.ToString();
+			var salt = "$2a$04$" + result.ToString(); // Mandatory to get correct salt format
 			return salt;
 		}
 
@@ -47,7 +47,7 @@ namespace DiyAuth.Utility
 				var tokenArray = new byte[199];
 				rng.GetBytes(tokenArray);
 				var token = Convert.ToBase64String(tokenArray);
-				token = Regex.Replace(token, "[\\/#?]+", "");
+				token = Regex.Replace(token, "[\\/#?]+", ""); // Removing any characters not allowed in Azure TableStorage RowKeys
 				return token;
 			}
 		}

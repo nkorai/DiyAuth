@@ -264,14 +264,43 @@ namespace DiyAuth.AuthenticationProviders
 			};
 		}
 
-		public Task DeleteToken(string token)
+		public async Task DeleteToken(string token)
 		{
-			throw new NotImplementedException();
+			var deleteEntity = new AzureTokenEntity
+			{
+				PartitionKey = Defaults.DefaultPartitionName,
+				RowKey = token
+			};
+
+			var deleteOperation = TableOperation.Delete(deleteEntity);
+			var result = await this.TokenTable.ExecuteAsync(deleteOperation).ConfigureAwait(false);
 		}
 
-		public Task DeleteIdentity(Guid identityId)
+		public async Task DeleteIdentity(Guid identityId)
 		{
-			throw new NotImplementedException();
+			// Retrieve identity entity
+			var retrieveOperation = TableOperation.Retrieve<AzureIdentityEntity>(Defaults.IdentityTableName, identityId.ToString());
+			var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
+			var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
+
+			// Delete both foreign key as well as identity record
+			var deleteIdentityEntity = new AzureIdentityEntity
+			{
+				PartitionKey = Defaults.DefaultPartitionName,
+				RowKey = identityId.ToString()
+			};
+
+			var deleteForeignKeyEntity = new AzureIdentityForeignKeyEntity
+			{
+				PartitionKey = Defaults.IdentityForeignKeyPartitionName,
+				RowKey = retrievedEntity.EmailAddress
+			};
+
+			var deleteEntityOperation = TableOperation.Delete(deleteIdentityEntity);
+			var deleteForeignKeyOperation = TableOperation.Delete(deleteForeignKeyEntity);
+
+			var entityDeleteResult = await this.TokenTable.ExecuteAsync(deleteEntityOperation).ConfigureAwait(false);
+			var foreignKeyDeleteResult = await this.TokenTable.ExecuteAsync(deleteForeignKeyOperation).ConfigureAwait(false);
 		}
 	}
 }
