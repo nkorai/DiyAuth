@@ -2,7 +2,7 @@
 using Microsoft.WindowsAzure.Storage.Table;
 using System;
 
-namespace DiyAuth.BackendEntities
+namespace DiyAuth.AuthenticationEntities
 {
 	public class AzureIdentityEntity : TableEntity, IIdentityEntity
 	{
@@ -24,7 +24,7 @@ namespace DiyAuth.BackendEntities
 
 		public AzureIdentityEntity()
 		{
-			this.PartitionKey = Defaults.PartitionName;
+			this.PartitionKey = Defaults.DefaultPartitionName;
 		}
 	}
 }

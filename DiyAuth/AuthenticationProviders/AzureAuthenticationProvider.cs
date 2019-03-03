@@ -1,4 +1,4 @@
-﻿using DiyAuth.BackendEntities;
+﻿using DiyAuth.AuthenticationEntities;
 using DiyAuth.Models;
 using DiyAuth.Utility;
 using Microsoft.WindowsAzure.Storage;
@@ -48,7 +48,7 @@ namespace DiyAuth.AuthenticationProviders
 		{
 			try
 			{
-				var retrieveOperation = TableOperation.Retrieve(Defaults.PartitionName, token);
+				var retrieveOperation = TableOperation.Retrieve(Defaults.DefaultPartitionName, token);
 				var retrievedResult = await this.TokenTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
 				var retrievedEntity = (AzureTokenEntity)retrievedResult?.Result;
 				return new AuthenticateResult
@@ -70,7 +70,7 @@ namespace DiyAuth.AuthenticationProviders
 		{
 			try
 			{
-				var retrieveOperation = TableOperation.Retrieve(Defaults.PartitionName, emailAddress);
+				var retrieveOperation = TableOperation.Retrieve(Defaults.DefaultPartitionName, emailAddress);
 				var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
 				var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
 
@@ -178,7 +178,7 @@ namespace DiyAuth.AuthenticationProviders
 				var perUserSalt = Security.GeneratePerUserSalt();
 				var hashedPassword = Security.GeneratePasswordHash(newPassword, perUserSalt);
 
-				var retrieveOperation = TableOperation.Retrieve(Defaults.PartitionName, emailAddress);
+				var retrieveOperation = TableOperation.Retrieve(Defaults.DefaultPartitionName, emailAddress);
 				var retrievedResult = await this.TokenTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
 				var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
 

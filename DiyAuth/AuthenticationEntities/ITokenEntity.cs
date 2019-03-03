@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 
-namespace DiyAuth.BackendEntities
+namespace DiyAuth.AuthenticationEntities
 {
 	public interface ITokenEntity
 	{

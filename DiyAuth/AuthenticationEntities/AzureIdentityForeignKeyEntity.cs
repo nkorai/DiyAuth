@@ -4,11 +4,11 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DiyAuth.BackendEntities
+namespace DiyAuth.AuthenticationEntities
 {
-	public class AzureTokenEntity : TableEntity, ITokenEntity
+	public class AzureIdentityForeignKeyEntity : TableEntity
 	{
-		public string Token
+		public string EmailAddress
 		{
 			get
 			{
@@ -22,9 +22,9 @@ namespace DiyAuth.BackendEntities
 
 		public Guid IdentityId { get; set; }
 
-		public AzureTokenEntity()
+		public AzureIdentityForeignKeyEntity()
 		{
-			this.PartitionKey = Defaults.PartitionName;
+			this.PartitionKey = Defaults.IdentityForeignKeyPartitionName;
 		}
 	}
 }
