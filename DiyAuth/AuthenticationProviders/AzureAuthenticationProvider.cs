@@ -4,6 +4,7 @@ using DiyAuth.Utility;
 using Microsoft.WindowsAzure.Storage;
 using Microsoft.WindowsAzure.Storage.Table;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -258,7 +259,7 @@ namespace DiyAuth.AuthenticationProviders
 
 			return new AuthorizeResult
 			{
-				Success = true, 
+				Success = true,
 				Token = token,
 				IdentityId = identityId
 			};
@@ -298,6 +299,34 @@ namespace DiyAuth.AuthenticationProviders
 				ETag = "*"
 			};
 
+			// Delete all authentication tokens associated with the Identity
+			var query = new TableQuery<AzureTokenEntity>();
+			query.Where(TableQuery.CombineFilters(
+					TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, Constants.PartitionNames.Default),
+					TableOperators.And,
+					TableQuery.GenerateFilterConditionForGuid("IdentityId", QueryComparisons.Equal, identityId)
+				)
+			);
+
+			TableContinuationToken continuationToken = null;
+			do
+			{
+				var segmentResult = await this.TokenTable.ExecuteQuerySegmentedAsync(query, continuationToken);
+				var batchOption = new TableBatchOperation();
+				foreach (var entity in segmentResult.Results)
+				{
+					batchOption.Delete(entity);
+				}
+
+				if (batchOption.Count > 0)
+				{
+					await this.TokenTable.ExecuteBatchAsync(batchOption).ConfigureAwait(false);
+				}
+
+				continuationToken = segmentResult.ContinuationToken;
+			} while (continuationToken != null);
+
+			// Delete identity and identity foreign key 
 			var deleteEntityOperation = TableOperation.Delete(deleteIdentityEntity);
 			var deleteForeignKeyOperation = TableOperation.Delete(deleteForeignKeyEntity);
 
