@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
@@ -49,7 +50,7 @@ namespace SampleApp
 					var result = await App.Authenticator.CreateIdentity(CreateEmailAddressTextBlock.Text, CreatePasswordTextBlock.Text);
 					if (result.Success)
 					{
-						this.Frame.Navigate(typeof(LandingPage));
+						await AuthenticateAndNavigate(result.Token);
 					}
 					else
 					{
@@ -84,7 +85,7 @@ namespace SampleApp
 				var result = await App.Authenticator.Authorize(LoginEmailAddressTextBlock.Text, LoginPasswordTextBlock.Text);
 				if (result.Success)
 				{
-					this.Frame.Navigate(typeof(LandingPage));
+					await AuthenticateAndNavigate(result.Token);
 				}
 				else
 				{
@@ -109,6 +110,15 @@ namespace SampleApp
 
 				await unhandledErrorDialog.ShowAsync();
 			}
+		}
+
+		private async Task AuthenticateAndNavigate(string token)
+		{
+			App.Token = token;
+			var result = await App.Authenticator.Authenticate(token);
+			App.IdentityId = result.IdentityId;
+			this.Frame.Navigate(typeof(LandingPage));
+
 		}
 	}
 }

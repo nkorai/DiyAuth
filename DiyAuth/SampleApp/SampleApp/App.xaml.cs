@@ -1,4 +1,5 @@
 ﻿using DiyAuth.AuthenticationProviders;
+using DiyAuth.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -26,7 +27,8 @@ namespace SampleApp
 	{
 		public static AzureAuthenticationProvider Authenticator;
 		public static string Token;
-	
+		public static Guid? IdentityId;
+
 		/// <summary>
 		/// Initializes the singleton application object.  This is the first line of authored code
 		/// executed, and as such is the logical equivalent of main() or WinMain().
@@ -36,6 +38,7 @@ namespace SampleApp
 			this.InitializeComponent();
 			this.Suspending += OnSuspending;
 		}
+
 
 		/// <summary>
 		/// Invoked when the application is launched normally by the end user.  Other entry points
