@@ -42,12 +42,26 @@ namespace SampleApp
 						CloseButtonText = "Ok"
 					};
 
-					var result = await identityExistsDialog.ShowAsync();
+					await identityExistsDialog.ShowAsync();
 				}
 				else
 				{
 					var result = await App.Authenticator.CreateIdentity(CreateEmailAddressTextBlock.Text, CreatePasswordTextBlock.Text);
-					//TODO: navigate to landing page
+					if (result.Success)
+					{
+						this.Frame.Navigate(typeof(LandingPage));
+					}
+					else
+					{
+						var unhandledErrorDialog = new ContentDialog
+						{
+							Title = "Error",
+							Content = "An unhandled error occured.",
+							CloseButtonText = "Ok"
+						};
+
+						await unhandledErrorDialog.ShowAsync();
+					}
 				}
 			}
 			catch (Exception ex)
@@ -59,7 +73,41 @@ namespace SampleApp
 					CloseButtonText = "Ok"
 				};
 
-				var result = await unhandledErrorDialog.ShowAsync();
+				await unhandledErrorDialog.ShowAsync();
+			}
+		}
+
+		private async void Login_Click(object sender, RoutedEventArgs e)
+		{
+			try
+			{
+				var result = await App.Authenticator.Authorize(LoginEmailAddressTextBlock.Text, LoginPasswordTextBlock.Text);
+				if (result.Success)
+				{
+					this.Frame.Navigate(typeof(LandingPage));
+				}
+				else
+				{
+					var unauthorizedLoginDialog = new ContentDialog
+					{
+						Title = "Error",
+						Content = "Invalid username/password combination was proivded",
+						CloseButtonText = "Ok"
+					};
+
+					await unauthorizedLoginDialog.ShowAsync();
+				}
+			}
+			catch (Exception ex)
+			{
+				var unhandledErrorDialog = new ContentDialog
+				{
+					Title = "Error",
+					Content = "An unhandled error occured. Exception: " + ex.ToString(),
+					CloseButtonText = "Ok"
+				};
+
+				await unhandledErrorDialog.ShowAsync();
 			}
 		}
 	}

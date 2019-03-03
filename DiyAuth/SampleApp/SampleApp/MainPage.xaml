@@ -22,7 +22,7 @@
 			<RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
 		
-		<TextBlock Grid.Row="1" Grid.Column="1" Text="Connection String" TextAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"></TextBlock>
+		<TextBlock Grid.Row="1" Grid.Column="1" Text="Azure Storage Account Connection String" TextAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"></TextBlock>
 		<TextBox Name="ConnectionStringTextBlock" VerticalAlignment="Center" Height="30px" Grid.Row="1" Grid.Column="2"></TextBox>
 		<Button Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Click="Next_Click" HorizontalAlignment="Center">Next</Button>
 	</Grid>

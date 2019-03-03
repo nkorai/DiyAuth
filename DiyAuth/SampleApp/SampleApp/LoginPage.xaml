@@ -12,7 +12,7 @@
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="1*"/>
 			<ColumnDefinition Width="4*"/>
-			<ColumnDefinition Width="5px"/>
+			<ColumnDefinition Width="1px"/>
 			<ColumnDefinition Width="4*"/>
 			<ColumnDefinition Width="1*"/>
 		</Grid.ColumnDefinitions>
@@ -38,6 +38,8 @@
 				<RowDefinition Height="*"/>
 			</Grid.RowDefinitions>
 
+			<TextBlock Grid.Row="0" Grid.ColumnSpan="4" Text="Create User" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="24px"></TextBlock>
+			
 			<TextBlock Grid.Row="1" Grid.Column="1" Text="Email Address" TextAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"></TextBlock>
 			<TextBox Name="CreateEmailAddressTextBlock" VerticalAlignment="Center" Height="30px" Grid.Row="1" Grid.Column="2"></TextBox>
 
@@ -47,6 +49,8 @@
 
 			<Button Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Click="CreateIdentity_Click" HorizontalAlignment="Center">Next</Button>
 		</Grid>
+
+		<Border Grid.Row="1" Grid.Column="2" Background="DarkBlue"></Border>
 
 		<!-- Login section -->
 		<Grid Grid.Row="1" Grid.Column="3" >
@@ -64,6 +68,8 @@
 				<RowDefinition Height="*"/>
 			</Grid.RowDefinitions>
 
+			<TextBlock Grid.Row="0" Grid.ColumnSpan="4" Text="Login" TextAlignment="Center" HorizontalAlignment="Center" VerticalAlignment="Center" FontWeight="Bold" FontSize="24px"></TextBlock>
+
 			<TextBlock Grid.Row="1" Grid.Column="1" Text="Email Address" TextAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"></TextBlock>
 			<TextBox Name="LoginEmailAddressTextBlock" VerticalAlignment="Center" Height="30px" Grid.Row="1" Grid.Column="2"></TextBox>
 
@@ -71,7 +77,7 @@
 			<TextBox Name="LoginPasswordTextBlock" VerticalAlignment="Center" Height="30px" Grid.Row="2" Grid.Column="2"></TextBox>
 
 
-			<Button Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Click="CreateIdentity_Click" HorizontalAlignment="Center">Next</Button>
+			<Button Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Click="Login_Click" HorizontalAlignment="Center">Next</Button>
 		</Grid>
 	</Grid>
 </Page>
