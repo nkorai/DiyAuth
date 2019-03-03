@@ -150,8 +150,8 @@ namespace DiyAuth.AuthenticationProviders
 				var createForeignKeyOperation = TableOperation.Insert(foreignKey);
 
 				// Insert identity information
+				await this.IdentityTable.ExecuteAsync(createForeignKeyOperation).ConfigureAwait(false); // This insert first to ensure there isn't a key conflict
 				await this.IdentityTable.ExecuteAsync(createIdentityOperation).ConfigureAwait(false);
-				await this.IdentityTable.ExecuteAsync(createForeignKeyOperation).ConfigureAwait(false);
 
 				// Token generation
 				var token = Security.GenerateToken();
