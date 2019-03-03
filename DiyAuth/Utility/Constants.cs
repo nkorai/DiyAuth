@@ -9,14 +9,14 @@
 
 		public static class TableNames
 		{
-			public const string IdentityTableName = "diyidentity";
-			public const string TokenTableName = "diytoken";
+			public const string IdentityTable = "diyidentity";
+			public const string TokenTable = "diytoken";
 		}
 
 		public static class PartitionNames
 		{
-			public const string DefaultPartitionName = "default";
-			public const string IdentityForeignKeyPartitionName = "emailAddressToIdentityId";
+			public const string Default = "default";
+			public const string IdentityForeignKey = "emailAddressToIdentityId";
 		}
 	}
 }

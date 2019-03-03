@@ -25,6 +25,7 @@ namespace SampleApp
 		public LandingPage()
 		{
 			this.InitializeComponent();
+			IdentityIdTextBlock.Text = App.IdentityId.ToString();
 		}
 
 		private void SignOut_Click(object sender, RoutedEventArgs e)

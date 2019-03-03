@@ -23,7 +23,7 @@
 			<TextBlock Text="Logged in with IdentityId:" FontWeight="Bold"></TextBlock>
 			<TextBlock Name="IdentityIdTextBlock"></TextBlock>
 
-			<Button Click="SignOut_Click">Delete Identity and Sign Out</Button>
+			<Button Click="SignOut_Click">Sign Out</Button>
 			<Button Click="DeleteIdentityAndSignOut_Click">Delete Identity and Sign Out</Button>
 		</StackPanel>
     </Grid>
