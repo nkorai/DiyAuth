@@ -4,8 +4,8 @@
 	<TargetFramework>netstandard2.0</TargetFramework>
 	<Platforms>x64</Platforms>
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-	<PackageLicenseUrl>https://github.com/nkorai/DiyAuth/blob/master/LICENSE</PackageLicenseUrl>
+	<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+	<PackageLicenseUrl></PackageLicenseUrl>
 	<PackageProjectUrl>https://github.com/nkorai/DiyAuth</PackageProjectUrl>
 	<RepositoryUrl>https://github.com/nkorai/DiyAuth</RepositoryUrl>
 	<VersionPrefix>1.0.0</VersionPrefix>

@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<package xmlns="http://schemas.microsoft.com/packaging/2013/05/nuspec.xsd">
+    <metadata>
+        <id>diyAuth</id>
+        <version>1.0.0</version>
+        <authors>Nausherwan Korai</authors>
+        <owners>nkorai</owners>
+        <projectUrl>https://github.com/nkorai/DiyAuth</projectUrl>
+        <license type="expression">MIT</license>
+        <iconUrl>https://raw.githubusercontent.com/nkorai/DiyAuth/master/icon.jpg</iconUrl>
+        <requireLicenseAcceptance>true</requireLicenseAcceptance>
+        <releaseNotes></releaseNotes>
+        <description>DIY Auth is a project aimed at placing the control and responsibility of user authentication in your hands.</description>
+        <copyright>Copyright ©2019 Nausherwan Korai</copyright>
+        <tags>Auth Authentication User Management Library .NET NetStandard Identity</tags>
+
+        <dependencies>
+            <dependency id="Newtonsoft.Json" version="9.0" />
+        </dependencies>
+    </metadata>
+</package>
