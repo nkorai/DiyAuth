@@ -10,13 +10,5 @@ Everytime I want to start a new side project I invariably have to rebuild the ab
 
 It's a decent time sync everytime I have to build it and I'd rather just get to building the meat and potatoes of the idea than building the authentication mechanism everytime. I feel like other developers have the same issue so I decided to build this into an open source library that implements the most common functionality as far as user authentication and authorization goes. 
 
-## How do I use it?
-TODO
-
 ## Recommendations on data layout
 The authorization/authentication endpoints in the project return an IdentityId Guid. I would take those and use them in your own databases to store other user related data keyed by this IdentityId e.g. Usernames, Address etc. 
-
-## Use cases 
-
-
-## Customization
