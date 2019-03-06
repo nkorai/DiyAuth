@@ -1,4 +1,7 @@
 # DiyAuth
+
+[Nuget Link](https://www.nuget.org/packages/DiyAuth/)
+
 ## What is DiyAuth?
 DIY Auth is a project aimed at placing the control and responsibility of user authentication in your hands. It implements a simple authorization and authentication scheme following industry best practices that is plug-and-play to help you jump start your next project. Furthermore it stores your user's authentication data in your cloud instance, allowing you to be free of relying on third party services to manage your data.
 
