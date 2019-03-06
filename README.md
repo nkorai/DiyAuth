@@ -12,3 +12,22 @@ It's a decent time sync everytime I have to build it and I'd rather just get to 
 
 ## Recommendations on data layout
 The authorization/authentication endpoints in the project return an IdentityId Guid. I would take those and use them in your own databases to store other user related data keyed by this IdentityId e.g. Usernames, Address etc. 
+
+## How do I use it?
+First and foremost there is a sample UWP application that uses the DiyAuth project included in the repository in the SampleApp folder.
+To use the DiyAuth in it's simplest configuration using an Azure Storage Account as your backend, all you have to do is initialize it as such:
+```
+var authenticationProvider = await Authenticator.GetAzureAuthenticator(storageAccountConnectionString)
+```
+I recommend caching the authentication provider somewhere as all other methods are exposed off of it. 
+
+### Standard use cases
+The following methods are exposed off of the authentication provider (and are listed in the `IAuthenticationProvider`)
+- CheckIdentityExists(string emailAddress)
+- CreateIdentity(string emailAddress, string password)
+- Authorize(string emailAddress, string password)
+- Authenticate(string token)
+- ChangePassword(string emailAddress, string oldPassword, string newPassword)
+- GenerateTokenForIdentityId(Guid identityId)
+- DeleteToken(string token)
+- DeleteIdentity(Guid identityId)
