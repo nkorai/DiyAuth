@@ -31,19 +31,27 @@ I recommend caching the authentication provider somewhere as all other methods a
 
 ### Standard use cases
 The following methods are exposed off of the authentication provider (and are listed in the `IAuthenticationProvider`)
+
 #### CheckIdentityExists(string emailAddress)
 You probably want to check if an identity exists before attempting to create it.
+
 #### CreateIdentity(string emailAddress, string password)
 Before being able to authorize or authenticate, you have to create an identity.
+
 #### Authorize(string emailAddress, string password)
 Once an identity has been created, you can authorize it and get an authentication `Token` that can be used to authenticate and retrieve an `IdentityId`.
+
 #### Authenticate(string token)
 You can use the authentication `Token` and use the `Authenticate` method to retrieve an IdentityId.
+
 #### ChangePassword(string emailAddress, string oldPassword, string newPassword)
 Allows a user to change their password by providing their old password.
+
 #### GenerateTokenForIdentityId(Guid identityId)
 Allows for the ability to possibly impersonate any identity in the system.
+
 #### DeleteToken(string token)
 Delete a token, which invalidates it and does not let it past the `Authenticate` method.
+
 #### DeleteIdentity(Guid identityId)
 Deletes the identity associated with the provided `IdentityId` as well as all `Tokens` associated with said `IdentityId`
