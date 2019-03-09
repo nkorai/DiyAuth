@@ -47,7 +47,7 @@ namespace SampleApp
 				}
 				else
 				{
-					var result = await App.Authenticator.CreateIdentity(CreateEmailAddressTextBlock.Text, CreatePasswordTextBlock.Text);
+					var result = await App.Authenticator.CreateIdentity(CreateEmailAddressTextBlock.Text, CreatePasswordBox.Password);
 					if (result.Success)
 					{
 						await AuthenticateAndNavigate(result.Token);
@@ -82,7 +82,7 @@ namespace SampleApp
 		{
 			try
 			{
-				var result = await App.Authenticator.Authorize(LoginEmailAddressTextBlock.Text, LoginPasswordTextBlock.Text);
+				var result = await App.Authenticator.Authorize(LoginEmailAddressTextBlock.Text, LoginPasswordBox.Password);
 				if (result.Success)
 				{
 					await AuthenticateAndNavigate(result.Token);

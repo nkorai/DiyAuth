@@ -31,15 +31,20 @@ namespace SampleApp
 		private async void SignOut_Click(object sender, RoutedEventArgs e)
 		{
 			await App.Authenticator.DeleteToken(App.Token);
-			App.Token = null;
-			App.IdentityId = null;
-			this.Frame.Navigate(typeof(LoginPage));
+			SignOut();
 		}
 
 		private async void DeleteIdentityAndSignOut_Click(object sender, RoutedEventArgs e)
 		{
 			await App.Authenticator.DeleteIdentity(App.IdentityId.Value);
-			SignOut_Click(sender, e);
+			SignOut();
+		}
+
+		private void SignOut()
+		{
+			App.Token = null;
+			App.IdentityId = null;
+			this.Frame.Navigate(typeof(LoginPage));
 		}
 	}
 }
