@@ -8,7 +8,7 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
+	<Grid>
 		<Grid.ColumnDefinitions>
 			<ColumnDefinition Width="*"/>
 			<ColumnDefinition Width="*"/>
@@ -19,12 +19,25 @@
 			<RowDefinition Height="*"/>
 			<RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
-		<StackPanel Grid.Row="1" Grid.Column="1">
-			<TextBlock Text="Logged in with IdentityId:" FontWeight="Bold"></TextBlock>
-			<TextBlock Name="IdentityIdTextBlock"></TextBlock>
 
-			<Button Click="SignOut_Click">Sign Out</Button>
-			<Button Click="DeleteIdentityAndSignOut_Click">Delete Identity and Sign Out</Button>
-		</StackPanel>
-    </Grid>
+		<Grid Grid.Row="1" Grid.Column="1">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="*"/>
+			</Grid.ColumnDefinitions>
+			<Grid.RowDefinitions>
+				<RowDefinition Height="*"/>
+				<RowDefinition Height="*"/>
+				<RowDefinition Height="*"/>
+			</Grid.RowDefinitions>
+			
+			
+			<StackPanel Grid.Row="0" Grid.Column="0">
+				<TextBlock Text="Logged in with IdentityId:" FontWeight="Bold"></TextBlock>
+				<TextBlock Name="IdentityIdTextBlock"></TextBlock>
+			</StackPanel>
+
+			<Button Grid.Row="1" Grid.Column="0" Click="SignOut_Click">Sign Out</Button>
+			<Button Grid.Row="2" Grid.Column="0" Click="DeleteIdentityAndSignOut_Click">Delete Identity and Sign Out</Button>
+		</Grid>
+	</Grid>
 </Page>
