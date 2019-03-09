@@ -44,7 +44,7 @@
 			<TextBox Name="CreateEmailAddressTextBlock" VerticalAlignment="Center" Height="30px" Grid.Row="1" Grid.Column="2"></TextBox>
 
 			<TextBlock Grid.Row="2" Grid.Column="1" Text="Password" TextAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"></TextBlock>
-			<TextBox Name="CreatePasswordTextBlock" VerticalAlignment="Center" Height="30px" Grid.Row="2" Grid.Column="2"></TextBox>
+			<PasswordBox Name="CreatePasswordBox" VerticalAlignment="Center" Height="30px" Grid.Row="2" Grid.Column="2" KeyDown="CreatePasswordBox_KeyDown"></PasswordBox>
 
 
 			<Button Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Click="CreateIdentity_Click" HorizontalAlignment="Center">Next</Button>
@@ -74,7 +74,7 @@
 			<TextBox Name="LoginEmailAddressTextBlock" VerticalAlignment="Center" Height="30px" Grid.Row="1" Grid.Column="2"></TextBox>
 
 			<TextBlock Grid.Row="2" Grid.Column="1" Text="Password" TextAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"></TextBlock>
-			<TextBox Name="LoginPasswordTextBlock" VerticalAlignment="Center" Height="30px" Grid.Row="2" Grid.Column="2"></TextBox>
+			<PasswordBox Name="LoginPasswordBox" VerticalAlignment="Center" Height="30px" Grid.Row="2" Grid.Column="2" KeyDown="LoginPasswordBox_KeyDown"></PasswordBox>
 
 
 			<Button Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Click="Login_Click" HorizontalAlignment="Center">Next</Button>

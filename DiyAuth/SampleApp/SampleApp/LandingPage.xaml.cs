@@ -28,17 +28,37 @@ namespace SampleApp
 			IdentityIdTextBlock.Text = App.IdentityId.ToString();
 		}
 
-		private void SignOut_Click(object sender, RoutedEventArgs e)
+		private async void GenerateTokenForIdentity_Click(object sender, RoutedEventArgs e)
 		{
-			App.Token = null;
-			App.IdentityId = null;
-			this.Frame.Navigate(typeof(LoginPage));
+			var tokenResult = await App.Authenticator.GenerateTokenForIdentityId(App.IdentityId.Value);
+			var tokenDialog = new CreateTokenForIdentityDialog(tokenResult.Token);
+
+			await tokenDialog.ShowAsync();
+		}
+
+		private async void ChangePassword_Click(object sender, RoutedEventArgs e)
+		{
+			var changePasswordDialog = new ChangePasswordDialog();
+			await changePasswordDialog.ShowAsync();
+		}
+
+		private async void SignOut_Click(object sender, RoutedEventArgs e)
+		{
+			await App.Authenticator.DeleteToken(App.Token);
+			SignOut();
 		}
 
 		private async void DeleteIdentityAndSignOut_Click(object sender, RoutedEventArgs e)
 		{
 			await App.Authenticator.DeleteIdentity(App.IdentityId.Value);
-			SignOut_Click(sender, e);
+			SignOut();
+		}
+
+		private void SignOut()
+		{
+			App.Token = null;
+			App.IdentityId = null;
+			this.Frame.Navigate(typeof(LoginPage));
 		}
 	}
 }

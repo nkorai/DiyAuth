@@ -10,7 +10,7 @@ using System.Threading.Tasks;
 
 namespace DiyAuth.AuthenticationProviders
 {
-	public class AzureAuthenticationProvider : IAuthenticationProvider
+	public class AzureTableStorageAuthenticationProvider : IAuthenticationProvider
 	{
 		public string ConnectionString { get; set; }
 		public string IdentityTableName { get; set; } = Constants.TableNames.IdentityTable;
@@ -21,14 +21,14 @@ namespace DiyAuth.AuthenticationProviders
 		public CloudTable TokenTable { get; private set; }
 		public CloudTableClient TableClient { get; private set; }
 
-		public AzureAuthenticationProvider(string storageAccountConnectionString)
+		public AzureTableStorageAuthenticationProvider(string storageAccountConnectionString)
 		{
 			this.ConnectionString = storageAccountConnectionString;
 		}
 
-		public static async Task<AzureAuthenticationProvider> Create(string connectionString)
+		public static async Task<AzureTableStorageAuthenticationProvider> Create(string connectionString)
 		{
-			var provider = new AzureAuthenticationProvider(connectionString);
+			var provider = new AzureTableStorageAuthenticationProvider(connectionString);
 			await provider.Initialize().ConfigureAwait(false);
 			return provider;
 		}
@@ -49,7 +49,7 @@ namespace DiyAuth.AuthenticationProviders
 		{
 			try
 			{
-				var retrieveOperation = TableOperation.Retrieve<AzureTokenEntity>(Constants.PartitionNames.Default, token);
+				var retrieveOperation = TableOperation.Retrieve<AzureTokenEntity>(Constants.PartitionNames.TokenPrimary, token);
 				var retrievedResult = await this.TokenTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
 				var retrievedEntity = (AzureTokenEntity)retrievedResult?.Result;
 				return new AuthenticateResult
@@ -84,7 +84,7 @@ namespace DiyAuth.AuthenticationProviders
 				}
 
 				// Retrieve IdentityEntity
-				var retrieveIdentityOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.Default, retrievedEntity.IdentityId.ToString());
+				var retrieveIdentityOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, retrievedEntity.IdentityId.ToString());
 				var retrievedIdentityResult = await this.IdentityTable.ExecuteAsync(retrieveIdentityOperation).ConfigureAwait(false);
 				var retrievedIdentityEntity = (AzureIdentityEntity)retrievedIdentityResult?.Result;
 
@@ -201,11 +201,15 @@ namespace DiyAuth.AuthenticationProviders
 			}
 		}
 
-		public async Task<ResetPasswordResult> ChangePassword(string emailAddress, string oldPassword, string newPassword)
+		public async Task<ResetPasswordResult> ChangePassword(Guid identityId, string oldPassword, string newPassword)
 		{
 			try
 			{
-				var authorizeResult = await Authorize(emailAddress, oldPassword).ConfigureAwait(false);
+				var retrieveOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, identityId.ToString());
+				var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
+				var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
+
+				var authorizeResult = await Authorize(retrievedEntity.EmailAddress, oldPassword).ConfigureAwait(false);
 				if (!authorizeResult.Success)
 				{
 					return new ResetPasswordResult
@@ -217,15 +221,11 @@ namespace DiyAuth.AuthenticationProviders
 				var perUserSalt = Security.GeneratePerUserSalt();
 				var hashedPassword = Security.GeneratePasswordHash(newPassword, perUserSalt);
 
-				var retrieveOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.Default, emailAddress);
-				var retrievedResult = await this.TokenTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
-				var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
-
 				retrievedEntity.PerUserSalt = perUserSalt;
 				retrievedEntity.HashedPassword = hashedPassword;
 
 				var setOperation = TableOperation.InsertOrReplace(retrievedEntity);
-				var result = await this.TokenTable.ExecuteAsync(setOperation).ConfigureAwait(false);
+				var result = await this.IdentityTable.ExecuteAsync(setOperation).ConfigureAwait(false);
 
 				return new ResetPasswordResult
 				{
@@ -243,7 +243,7 @@ namespace DiyAuth.AuthenticationProviders
 
 		public async Task<AuthorizeResult> GenerateTokenForIdentityId(Guid identityId)
 		{
-			var retrieveOperation = TableOperation.Retrieve<AzureIdentityEntity>(this.IdentityTableName, identityId.ToString());
+			var retrieveOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, identityId.ToString());
 			var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
 			var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
 
@@ -269,8 +269,9 @@ namespace DiyAuth.AuthenticationProviders
 		{
 			var deleteEntity = new AzureTokenEntity
 			{
-				PartitionKey = Constants.PartitionNames.Default,
-				RowKey = token
+				PartitionKey = Constants.PartitionNames.TokenPrimary,
+				RowKey = token,
+				ETag = "*"
 			};
 
 			var deleteOperation = TableOperation.Delete(deleteEntity);
@@ -280,14 +281,14 @@ namespace DiyAuth.AuthenticationProviders
 		public async Task DeleteIdentity(Guid identityId)
 		{
 			// Retrieve identity entity
-			var retrieveOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.Default, identityId.ToString());
+			var retrieveOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, identityId.ToString());
 			var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
 			var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
 
 			// Delete both foreign key as well as identity record
 			var deleteIdentityEntity = new AzureIdentityEntity
 			{
-				PartitionKey = Constants.PartitionNames.Default,
+				PartitionKey = Constants.PartitionNames.IdentityPrimary,
 				RowKey = identityId.ToString(),
 				ETag = "*"
 			};
@@ -302,7 +303,7 @@ namespace DiyAuth.AuthenticationProviders
 			// Delete all authentication tokens associated with the Identity
 			var query = new TableQuery<AzureTokenEntity>();
 			query.Where(TableQuery.CombineFilters(
-					TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, Constants.PartitionNames.Default),
+					TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, Constants.PartitionNames.TokenPrimary),
 					TableOperators.And,
 					TableQuery.GenerateFilterConditionForGuid("IdentityId", QueryComparisons.Equal, identityId)
 				)
