@@ -31,8 +31,7 @@
 				<RowDefinition Height="*"/>
 				<RowDefinition Height="*"/>
 			</Grid.RowDefinitions>
-			
-			
+						
 			<StackPanel Grid.Row="0" Grid.Column="0">
 				<TextBlock Text="Logged in with IdentityId:" FontWeight="Bold"></TextBlock>
 				<TextBlock Name="IdentityIdTextBlock"></TextBlock>

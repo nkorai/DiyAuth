@@ -31,18 +31,15 @@ namespace SampleApp
 		private async void GenerateTokenForIdentity_Click(object sender, RoutedEventArgs e)
 		{
 			var tokenResult = await App.Authenticator.GenerateTokenForIdentityId(App.IdentityId.Value);
-			var tokenDialog = new ContentDialog()
-			{
-				Title = "Token",
-				Content = tokenResult.Token,
-				CloseButtonText = "Close"
-			};
+			var tokenDialog = new CreateTokenForIdentityDialog(tokenResult.Token);
 
 			await tokenDialog.ShowAsync();
 		}
 
 		private async void ChangePassword_Click(object sender, RoutedEventArgs e)
 		{
+			var changePasswordDialog = new ChangePasswordDialog();
+			await changePasswordDialog.ShowAsync();
 		}
 
 		private async void SignOut_Click(object sender, RoutedEventArgs e)
