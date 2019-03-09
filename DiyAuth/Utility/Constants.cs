@@ -15,8 +15,9 @@
 
 		public static class PartitionNames
 		{
-			public const string Default = "default";
-			public const string IdentityForeignKey = "emailAddressToIdentityId";
+			public const string IdentityPrimary = "IdentityPrimary";
+			public const string TokenPrimary = "TokenPrimary";
+			public const string IdentityForeignKey = "EmailAddressToIdentityId";
 		}
 	}
 }

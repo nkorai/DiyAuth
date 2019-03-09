@@ -5,9 +5,9 @@ namespace DiyAuth
 {
 	public static class Authenticator
 	{
-		public static async Task<AzureAuthenticationProvider> GetAzureAuthenticator(string connectionString)
+		public static async Task<AzureTableStorageAuthenticationProvider> GetAzureAuthenticator(string connectionString)
 		{
-			var provider = await AzureAuthenticationProvider.Create(connectionString).ConfigureAwait(false);
+			var provider = await AzureTableStorageAuthenticationProvider.Create(connectionString).ConfigureAwait(false);
 			return provider;
 		}
 	}
