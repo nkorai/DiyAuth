@@ -30,6 +30,10 @@ namespace SampleApp
 
 		private void ContentDialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
 		{
+			var oldPassword = OldPasswordTextBox.Password;
+			var newPassword = NewPasswordTextBox.Password;
+
+			var changePasswordResult = App.Authenticator.ChangePassword(App.IdentityId.Value, oldPassword, newPassword);
 		}
 	}
 }

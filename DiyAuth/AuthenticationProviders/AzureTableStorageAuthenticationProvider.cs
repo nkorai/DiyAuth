@@ -201,11 +201,15 @@ namespace DiyAuth.AuthenticationProviders
 			}
 		}
 
-		public async Task<ResetPasswordResult> ChangePassword(string emailAddress, string oldPassword, string newPassword)
+		public async Task<ResetPasswordResult> ChangePassword(Guid identityId, string oldPassword, string newPassword)
 		{
 			try
 			{
-				var authorizeResult = await Authorize(emailAddress, oldPassword).ConfigureAwait(false);
+				var retrieveOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, identityId.ToString());
+				var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
+				var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
+
+				var authorizeResult = await Authorize(retrievedEntity.EmailAddress, oldPassword).ConfigureAwait(false);
 				if (!authorizeResult.Success)
 				{
 					return new ResetPasswordResult
@@ -217,15 +221,11 @@ namespace DiyAuth.AuthenticationProviders
 				var perUserSalt = Security.GeneratePerUserSalt();
 				var hashedPassword = Security.GeneratePasswordHash(newPassword, perUserSalt);
 
-				var retrieveOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, emailAddress);
-				var retrievedResult = await this.TokenTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
-				var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
-
 				retrievedEntity.PerUserSalt = perUserSalt;
 				retrievedEntity.HashedPassword = hashedPassword;
 
 				var setOperation = TableOperation.InsertOrReplace(retrievedEntity);
-				var result = await this.TokenTable.ExecuteAsync(setOperation).ConfigureAwait(false);
+				var result = await this.IdentityTable.ExecuteAsync(setOperation).ConfigureAwait(false);
 
 				return new ResetPasswordResult
 				{
