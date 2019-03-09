@@ -28,6 +28,23 @@ namespace SampleApp
 			IdentityIdTextBlock.Text = App.IdentityId.ToString();
 		}
 
+		private async void GenerateTokenForIdentity_Click(object sender, RoutedEventArgs e)
+		{
+			var tokenResult = await App.Authenticator.GenerateTokenForIdentityId(App.IdentityId.Value);
+			var tokenDialog = new ContentDialog()
+			{
+				Title = "Token",
+				Content = tokenResult.Token,
+				CloseButtonText = "Close"
+			};
+
+			await tokenDialog.ShowAsync();
+		}
+
+		private async void ChangePassword_Click(object sender, RoutedEventArgs e)
+		{
+		}
+
 		private async void SignOut_Click(object sender, RoutedEventArgs e)
 		{
 			await App.Authenticator.DeleteToken(App.Token);

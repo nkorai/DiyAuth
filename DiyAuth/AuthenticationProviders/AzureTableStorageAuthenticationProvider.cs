@@ -243,7 +243,7 @@ namespace DiyAuth.AuthenticationProviders
 
 		public async Task<AuthorizeResult> GenerateTokenForIdentityId(Guid identityId)
 		{
-			var retrieveOperation = TableOperation.Retrieve<AzureIdentityEntity>(this.IdentityTableName, identityId.ToString());
+			var retrieveOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, identityId.ToString());
 			var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
 			var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
 

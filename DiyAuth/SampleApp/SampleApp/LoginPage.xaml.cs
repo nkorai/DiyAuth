@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.System;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -29,7 +30,20 @@ namespace SampleApp
 			this.InitializeComponent();
 		}
 
+		private async void CreatePasswordBox_KeyDown(object sender, KeyRoutedEventArgs e)
+		{
+			if (e.Key == VirtualKey.Enter)
+			{
+				await CreateIdentityHandler();
+			}
+		}
+
 		private async void CreateIdentity_Click(object sender, RoutedEventArgs e)
+		{
+			await CreateIdentityHandler();
+		}
+
+		private async Task CreateIdentityHandler()
 		{
 			try
 			{
@@ -78,7 +92,20 @@ namespace SampleApp
 			}
 		}
 
+		private async void LoginPasswordBox_KeyDown(object sender, KeyRoutedEventArgs e)
+		{
+			if (e.Key == VirtualKey.Enter)
+			{
+				await LoginHandler();
+			}
+		}
+
 		private async void Login_Click(object sender, RoutedEventArgs e)
+		{
+			await LoginHandler();
+		}
+
+		private async Task LoginHandler()
 		{
 			try
 			{
@@ -118,7 +145,6 @@ namespace SampleApp
 			var result = await App.Authenticator.Authenticate(token);
 			App.IdentityId = result.IdentityId;
 			this.Frame.Navigate(typeof(LandingPage));
-
 		}
 	}
 }
