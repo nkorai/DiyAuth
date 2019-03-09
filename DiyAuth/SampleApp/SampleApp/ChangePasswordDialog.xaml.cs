@@ -28,12 +28,34 @@ namespace SampleApp
 		{
 		}
 
-		private void ContentDialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+		private async void ContentDialog_SecondaryButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
 		{
 			var oldPassword = OldPasswordTextBox.Password;
 			var newPassword = NewPasswordTextBox.Password;
 
-			var changePasswordResult = App.Authenticator.ChangePassword(App.IdentityId.Value, oldPassword, newPassword);
+			var changePasswordResult = await App.Authenticator.ChangePassword(App.IdentityId.Value, oldPassword, newPassword);
+			if (changePasswordResult.Success)
+			{
+				var successDialog = new ContentDialog
+				{
+					Title = "Success",
+					Content = "Successfully changed password.",
+					CloseButtonText = "Ok"
+				};
+
+				await successDialog.ShowAsync();
+			}
+			else
+			{
+				var unssucessDialog = new ContentDialog
+				{
+					Title = "Error",
+					Content = "Unable to change password",
+					CloseButtonText = "Ok"
+				};
+
+				await unssucessDialog.ShowAsync();
+			}
 		}
 	}
 }
