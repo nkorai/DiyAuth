@@ -19,8 +19,6 @@
     </metadata>
 
     <files>
-         <file src="*\**" target="\" exclude=".vs\**\*.*"/>
-         <file src="*\**" target="\" exclude=".git\**\*.*"/>
-         <file src="*\**" target="\" exclude=".github\**\*.*"/>
+         <file src="DiyAuth\bin\x64\Release\**.dll" target="lib" />
     </files>
 </package>

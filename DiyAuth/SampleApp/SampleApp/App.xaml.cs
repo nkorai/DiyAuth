@@ -40,10 +40,10 @@ namespace SampleApp
 			this.Suspending += OnSuspending;
 
 			var localSettings =	Windows.Storage.ApplicationData.Current.LocalSettings;
-			var connectionStringExists = localSettings.Values.ContainsKey("ConnectionString");
+			var connectionStringExists = localSettings.Values.ContainsKey(Constants.LocalStorage.AzureStorageConnectionString);
 			if (connectionStringExists)
 			{
-				ConnectionString = localSettings.Values["ConnectionString"] as string;
+				ConnectionString = localSettings.Values[Constants.LocalStorage.AzureStorageConnectionString] as string;
 			}
 		}
 

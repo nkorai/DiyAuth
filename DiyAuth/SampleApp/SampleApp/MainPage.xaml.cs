@@ -15,10 +15,10 @@ namespace SampleApp
 			this.InitializeComponent();
 
 			var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-			var connectionStringExists = localSettings.Values.ContainsKey("ConnectionString");
+			var connectionStringExists = localSettings.Values.ContainsKey(Constants.LocalStorage.AzureStorageConnectionString);
 			if (connectionStringExists)
 			{
-				ConnectionStringTextBox.Text = localSettings.Values["ConnectionString"] as string;
+				ConnectionStringTextBox.Text = localSettings.Values[Constants.LocalStorage.AzureStorageConnectionString] as string;
 			}
 		}
 
@@ -29,7 +29,7 @@ namespace SampleApp
 			App.Authenticator = azureAuthenticator;
 
 			var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
-			localSettings.Values["ConnectionString"] = connectionString;
+			localSettings.Values[Constants.LocalStorage.AzureStorageConnectionString] = connectionString;
 
 			this.Frame.Navigate(typeof(LoginPage));
 		}

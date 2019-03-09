@@ -28,8 +28,9 @@ namespace SampleApp
 			IdentityIdTextBlock.Text = App.IdentityId.ToString();
 		}
 
-		private void SignOut_Click(object sender, RoutedEventArgs e)
+		private async void SignOut_Click(object sender, RoutedEventArgs e)
 		{
+			await App.Authenticator.DeleteToken(App.Token);
 			App.Token = null;
 			App.IdentityId = null;
 			this.Frame.Navigate(typeof(LoginPage));
