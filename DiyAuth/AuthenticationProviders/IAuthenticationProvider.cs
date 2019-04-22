@@ -8,7 +8,6 @@ namespace DiyAuth.AuthenticationProviders
 {
 	public interface IAuthenticationProvider
 	{
-		string ConnectionString { get; set; }
 		Task<bool> CheckIdentityExists(string emailAddress);
 		Task<CreateIdentityResult> CreateIdentity(string emailAddress, string password);
 		Task<AuthorizeResult> Authorize(string emailAddress, string password);

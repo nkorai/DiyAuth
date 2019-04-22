@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.Model;
 using DiyAuth.Models;
 using DiyAuth.Utility;
 
@@ -9,25 +11,97 @@ namespace DiyAuth.AuthenticationProviders
 {
 	public class AWSDynamoDbAuthenticationProvider : IAuthenticationProvider
 	{
-		public string ConnectionString { get; set; }
+		public string AwsAccessKeyId { get; set; }
+		public string AwsSecretAccessKey { get; set; }
 		public string IdentityTableName { get; set; } = Constants.TableNames.IdentityTable;
 		public string TokenTableName { get; set; } = Constants.TableNames.TokenTable;
 
-		public AWSDynamoDbAuthenticationProvider(string connectionString)
+		public IAmazonDynamoDB DynamoDbClient { get; private set; }
+
+
+		public AWSDynamoDbAuthenticationProvider(string awsAccessKeyId, string awsSecretAccessKey)
 		{
-			this.ConnectionString = storageAccountConnectionString;
+			this.AwsAccessKeyId = awsAccessKeyId;
+			this.AwsSecretAccessKey = awsSecretAccessKey;
 		}
 
 		public async Task Initialize()
 		{
-			//this.StorageAccount = CloudStorageAccount.Parse(this.ConnectionString);
-			//this.TableClient = this.StorageAccount.CreateCloudTableClient();
-			//
-			//this.IdentityTable = this.TableClient.GetTableReference(this.IdentityTableName);
-			//this.TokenTable = this.TableClient.GetTableReference(this.TokenTableName);
-			//
-			//await this.IdentityTable.CreateIfNotExistsAsync().ConfigureAwait(false);
-			//await this.TokenTable.CreateIfNotExistsAsync().ConfigureAwait(false);
+			var tablesAdded = false;
+			var allTables = new List<string>() { this.IdentityTableName, this.TokenTableName };
+
+
+			this.DynamoDbClient = new AmazonDynamoDBClient(this.AwsAccessKeyId, this.AwsSecretAccessKey);
+			var tableResponse = await this.DynamoDbClient.ListTablesAsync();
+			var currentTables = tableResponse.TableNames;
+
+			if (!currentTables.Contains(this.IdentityTableName))
+			{
+
+				var tableRequest = new CreateTableRequest
+				{
+					TableName = this.IdentityTableName,
+					ProvisionedThroughput = new ProvisionedThroughput { ReadCapacityUnits = 10, WriteCapacityUnits = 10 },
+					KeySchema = new List<KeySchemaElement>
+					{
+						new KeySchemaElement
+						{
+							AttributeName = "Name",
+							KeyType = KeyType.HASH
+						}
+					},
+					AttributeDefinitions = new List<AttributeDefinition>
+					{
+						new AttributeDefinition { AttributeName = "Name", AttributeType = ScalarAttributeType.S }
+					}
+				};
+
+				await this.DynamoDbClient.CreateTableAsync(tableRequest);
+				tablesAdded = true;
+			}
+
+			if (!currentTables.Contains(this.TokenTableName))
+			{
+				
+			}
+
+			if (tablesAdded)
+			{
+				while (true)
+				{
+					var allActive = true;
+					foreach (var table in allTables)
+					{
+						var tableStatus = await GetTableStatus(table);
+						var isTableActive = string.Equals(tableStatus, "ACTIVE", StringComparison.OrdinalIgnoreCase);
+						if (!isTableActive)
+						{
+							allActive = false;
+						}
+					}
+
+					if (allActive)
+					{
+						break;
+					}
+
+					await Task.Delay(TimeSpan.FromSeconds(5));
+				}
+			}
+		}
+
+		private async Task<TableStatus> GetTableStatus(string tableName)
+		{
+			try
+			{
+				var tableRequest = await this.DynamoDbClient.DescribeTableAsync(new DescribeTableRequest { TableName = tableName });
+				var table = tableRequest.Table;
+				return table == null ? null : table.TableStatus;
+			}
+			catch (ResourceNotFoundException)
+			{
+				return string.Empty;
+			}
 		}
 
 		public Task<AuthenticateResult> Authenticate(string token)
