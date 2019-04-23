@@ -10,5 +10,11 @@ namespace DiyAuth
 			var provider = await AzureTableStorageAuthenticationProvider.Create(connectionString).ConfigureAwait(false);
 			return provider;
 		}
+
+		public static async Task<AWSDynamoDbAuthenticationProvider> GetAWSDynamoDbAuthenticator(string awsAccessKeyId, string awsSecretAccessKey)
+		{
+			var provider = await AWSDynamoDbAuthenticationProvider.Create(awsAccessKeyId, awsSecretAccessKey).ConfigureAwait(false);
+			return provider;
+		}
 	}
 }

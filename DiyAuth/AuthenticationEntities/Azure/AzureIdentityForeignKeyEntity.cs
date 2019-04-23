@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace DiyAuth.AuthenticationEntities
+namespace DiyAuth.AuthenticationEntities.Azure
 {
 	public class AzureIdentityForeignKeyEntity : TableEntity
 	{

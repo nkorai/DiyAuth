@@ -2,7 +2,7 @@
 using Microsoft.WindowsAzure.Storage.Table;
 using System;
 
-namespace DiyAuth.AuthenticationEntities
+namespace DiyAuth.AuthenticationEntities.Azure
 {
 	public class AzureIdentityEntity : TableEntity, IIdentityEntity
 	{

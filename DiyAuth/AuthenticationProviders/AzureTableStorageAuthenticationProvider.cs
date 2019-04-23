@@ -1,4 +1,5 @@
 ﻿using DiyAuth.AuthenticationEntities;
+using DiyAuth.AuthenticationEntities.Azure;
 using DiyAuth.Models;
 using DiyAuth.Utility;
 using Microsoft.WindowsAzure.Storage;

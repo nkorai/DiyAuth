@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
+using DiyAuth.AuthenticationEntities.AWS;
 using DiyAuth.Models;
 using DiyAuth.Utility;
 
@@ -13,11 +14,11 @@ namespace DiyAuth.AuthenticationProviders
 	{
 		public string AwsAccessKeyId { get; set; }
 		public string AwsSecretAccessKey { get; set; }
+
 		public string IdentityTableName { get; set; } = Constants.TableNames.IdentityTable;
 		public string TokenTableName { get; set; } = Constants.TableNames.TokenTable;
 
 		public IAmazonDynamoDB DynamoDbClient { get; private set; }
-
 
 		public AWSDynamoDbAuthenticationProvider(string awsAccessKeyId, string awsSecretAccessKey)
 		{
@@ -25,11 +26,17 @@ namespace DiyAuth.AuthenticationProviders
 			this.AwsSecretAccessKey = awsSecretAccessKey;
 		}
 
+		public static async Task<AWSDynamoDbAuthenticationProvider> Create(string awsAccessKeyId, string awsSecretAccessKey)
+		{
+			var provider = new AWSDynamoDbAuthenticationProvider(awsAccessKeyId, awsSecretAccessKey);
+			await provider.Initialize().ConfigureAwait(false);
+			return provider;
+		}
+
 		public async Task Initialize()
 		{
 			var tablesAdded = false;
 			var allTables = new List<string>() { this.IdentityTableName, this.TokenTableName };
-
 
 			this.DynamoDbClient = new AmazonDynamoDBClient(this.AwsAccessKeyId, this.AwsSecretAccessKey);
 			var tableResponse = await this.DynamoDbClient.ListTablesAsync();
@@ -37,7 +44,6 @@ namespace DiyAuth.AuthenticationProviders
 
 			if (!currentTables.Contains(this.IdentityTableName))
 			{
-
 				var tableRequest = new CreateTableRequest
 				{
 					TableName = this.IdentityTableName,
@@ -46,13 +52,13 @@ namespace DiyAuth.AuthenticationProviders
 					{
 						new KeySchemaElement
 						{
-							AttributeName = "Name",
+							AttributeName = nameof(AWSIdentityEntity.IdentityId),
 							KeyType = KeyType.HASH
 						}
 					},
 					AttributeDefinitions = new List<AttributeDefinition>
 					{
-						new AttributeDefinition { AttributeName = "Name", AttributeType = ScalarAttributeType.S }
+						new AttributeDefinition { AttributeName =  nameof(AWSIdentityEntity.EmailAddress), AttributeType = ScalarAttributeType.S }
 					}
 				};
 
@@ -62,7 +68,22 @@ namespace DiyAuth.AuthenticationProviders
 
 			if (!currentTables.Contains(this.TokenTableName))
 			{
-				
+				var tableRequest = new CreateTableRequest
+				{
+					TableName = this.TokenTableName,
+					ProvisionedThroughput = new ProvisionedThroughput { ReadCapacityUnits = 10, WriteCapacityUnits = 10 },
+					KeySchema = new List<KeySchemaElement>
+					{
+						new KeySchemaElement
+						{
+							AttributeName = nameof(AWSTokenEntity.Token),
+							KeyType = KeyType.HASH
+						}
+					}
+				};
+
+				await this.DynamoDbClient.CreateTableAsync(tableRequest);
+				tablesAdded = true;
 			}
 
 			if (tablesAdded)
