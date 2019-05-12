@@ -11,9 +11,9 @@ namespace DiyAuth
 			return provider;
 		}
 
-		public static async Task<AWSDynamoDbAuthenticationProvider> GetAWSDynamoDbAuthenticator(string awsAccessKeyId, string awsSecretAccessKey)
+		public static async Task<AWSDynamoDbAuthenticationProvider> GetAWSDynamoDbAuthenticator(string awsAccessKeyId, string awsSecretAccessKey, Amazon.RegionEndpoint regionEndpoint)
 		{
-			var provider = await AWSDynamoDbAuthenticationProvider.Create(awsAccessKeyId, awsSecretAccessKey).ConfigureAwait(false);
+			var provider = await AWSDynamoDbAuthenticationProvider.Create(awsAccessKeyId, awsSecretAccessKey, regionEndpoint).ConfigureAwait(false);
 			return provider;
 		}
 	}

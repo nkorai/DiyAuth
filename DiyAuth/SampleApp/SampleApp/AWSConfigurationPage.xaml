@@ -30,6 +30,9 @@
 		<TextBlock Grid.Row="2" Grid.Column="1" Text="AWS Secret Access Key" TextAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"></TextBlock>
 		<TextBox  Grid.Row="2" Grid.Column="2" Name="SecretAccessTextBox" VerticalAlignment="Center" Height="30px"></TextBox>
 
+		<TextBlock Grid.Row="3" Grid.Column="1" Text="AWS Region" TextAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"></TextBlock>
+		<ComboBox Grid.Row="3" Grid.Column="2" x:Name="RegionsCombo" Height="44" Width="296" ItemsSource="{x:Bind RegionList}"/>
+		
 		<Button Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Click="Next_Click"  HorizontalAlignment="Center">Next</Button>
 	</Grid>
 </Page>

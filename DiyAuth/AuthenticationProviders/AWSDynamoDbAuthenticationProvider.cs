@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
+using Amazon;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.Model;
 using DiyAuth.AuthenticationEntities.AWS;
@@ -15,20 +16,23 @@ namespace DiyAuth.AuthenticationProviders
 		public string AwsAccessKeyId { get; set; }
 		public string AwsSecretAccessKey { get; set; }
 
+		public RegionEndpoint RegionEndpoint { get; set; }
+
 		public string IdentityTableName { get; set; } = Constants.TableNames.IdentityTable;
 		public string TokenTableName { get; set; } = Constants.TableNames.TokenTable;
 
 		public IAmazonDynamoDB DynamoDbClient { get; private set; }
 
-		public AWSDynamoDbAuthenticationProvider(string awsAccessKeyId, string awsSecretAccessKey)
+		public AWSDynamoDbAuthenticationProvider(string awsAccessKeyId, string awsSecretAccessKey, RegionEndpoint regionEndpoint)
 		{
 			this.AwsAccessKeyId = awsAccessKeyId;
 			this.AwsSecretAccessKey = awsSecretAccessKey;
+			this.RegionEndpoint = regionEndpoint;
 		}
 
-		public static async Task<AWSDynamoDbAuthenticationProvider> Create(string awsAccessKeyId, string awsSecretAccessKey)
+		public static async Task<AWSDynamoDbAuthenticationProvider> Create(string awsAccessKeyId, string awsSecretAccessKey, RegionEndpoint regionEndpoint)
 		{
-			var provider = new AWSDynamoDbAuthenticationProvider(awsAccessKeyId, awsSecretAccessKey);
+			var provider = new AWSDynamoDbAuthenticationProvider(awsAccessKeyId, awsSecretAccessKey, regionEndpoint);
 			await provider.Initialize().ConfigureAwait(false);
 			return provider;
 		}
@@ -38,7 +42,7 @@ namespace DiyAuth.AuthenticationProviders
 			var tablesAdded = false;
 			var allTables = new List<string>() { this.IdentityTableName, this.TokenTableName };
 
-			this.DynamoDbClient = new AmazonDynamoDBClient(this.AwsAccessKeyId, this.AwsSecretAccessKey);
+			this.DynamoDbClient = new AmazonDynamoDBClient(this.AwsAccessKeyId, this.AwsSecretAccessKey, this.RegionEndpoint);
 			var tableResponse = await this.DynamoDbClient.ListTablesAsync();
 			var currentTables = tableResponse.TableNames;
 
