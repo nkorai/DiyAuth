@@ -8,7 +8,28 @@
     mc:Ignorable="d"
     Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
 
-    <Grid>
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="2*"/>
+			<ColumnDefinition Width="4*"/>
+			<ColumnDefinition Width="4*"/>
+			<ColumnDefinition Width="2*"/>
+		</Grid.ColumnDefinitions>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="50px"/>
+			<RowDefinition Height="50px"/>
+			<RowDefinition Height="50px"/>
+			<RowDefinition Height="50px"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
 
-    </Grid>
+		<TextBlock Grid.Row="1" Grid.Column="1" Text="AWS Access Key Id" TextAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"></TextBlock>
+		<TextBox Name="AccessKeyIdTextBox" VerticalAlignment="Center" Height="30px" Grid.Row="1" Grid.Column="2"></TextBox>
+
+		<TextBlock Grid.Row="2" Grid.Column="1" Text="AWS Secret Access Key" TextAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"></TextBlock>
+		<TextBox  Grid.Row="2" Grid.Column="2" Name="SecretAccessTextBox" VerticalAlignment="Center" Height="30px"></TextBox>
+
+		<Button Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Click="Next_Click"  HorizontalAlignment="Center">Next</Button>
+	</Grid>
 </Page>

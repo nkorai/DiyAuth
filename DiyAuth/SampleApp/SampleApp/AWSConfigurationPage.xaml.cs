@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DiyAuth;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -25,6 +26,21 @@ namespace SampleApp
 		public AWSConfigurationPage()
 		{
 			this.InitializeComponent();
+		}
+
+		private async void Next_Click(object sender, RoutedEventArgs e)
+		{
+			var accessKeyId = AccessKeyIdTextBox.Text;
+			var secretAccessKey = SecretAccessTextBox.Text;
+
+			var awsAuthenticator = await Authenticator.GetAWSDynamoDbAuthenticator(accessKeyId, secretAccessKey);
+			App.Authenticator = awsAuthenticator;
+
+			var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+			localSettings.Values[Constants.LocalStorage.AwsAccessKeyId] = accessKeyId;
+			localSettings.Values[Constants.LocalStorage.AwsSecretAccessKey] = secretAccessKey;
+
+			this.Frame.Navigate(typeof(LoginPage));
 		}
 	}
 }

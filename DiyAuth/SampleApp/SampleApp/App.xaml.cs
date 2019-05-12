@@ -25,7 +25,7 @@ namespace SampleApp
 
 	sealed partial class App : Application
 	{
-		public static AzureTableStorageAuthenticationProvider Authenticator;
+		public static IAuthenticationProvider Authenticator;
 		public static string ConnectionString;
 		public static string Token;
 		public static Guid? IdentityId;
