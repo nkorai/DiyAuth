@@ -7,6 +7,7 @@ using Microsoft.WindowsAzure.Storage.Table;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace DiyAuth.AuthenticationProviders
@@ -46,7 +47,7 @@ namespace DiyAuth.AuthenticationProviders
 			await this.TokenTable.CreateIfNotExistsAsync().ConfigureAwait(false);
 		}
 
-		public async Task<AuthenticateResult> Authenticate(string token)
+		public async Task<AuthenticateResult> Authenticate(string token, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			try
 			{
@@ -68,7 +69,7 @@ namespace DiyAuth.AuthenticationProviders
 			}
 		}
 
-		public async Task<AuthorizeResult> Authorize(string emailAddress, string password)
+		public async Task<AuthorizeResult> Authorize(string emailAddress, string password, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			try
 			{
@@ -125,7 +126,7 @@ namespace DiyAuth.AuthenticationProviders
 			}
 		}
 
-		public async Task<CreateIdentityResult> CreateIdentity(string emailAddress, string password)
+		public async Task<CreateIdentityResult> CreateIdentity(string emailAddress, string password, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			try
 			{
@@ -182,7 +183,7 @@ namespace DiyAuth.AuthenticationProviders
 			}
 		}
 
-		public async Task<bool> CheckIdentityExists(string emailAddress)
+		public async Task<bool> CheckIdentityExists(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			try
 			{
@@ -202,7 +203,7 @@ namespace DiyAuth.AuthenticationProviders
 			}
 		}
 
-		public async Task<ResetPasswordResult> ChangePassword(Guid identityId, string oldPassword, string newPassword)
+		public async Task<ResetPasswordResult> ChangePassword(Guid identityId, string oldPassword, string newPassword, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			try
 			{
@@ -210,7 +211,7 @@ namespace DiyAuth.AuthenticationProviders
 				var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
 				var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
 
-				var authorizeResult = await Authorize(retrievedEntity.EmailAddress, oldPassword).ConfigureAwait(false);
+				var authorizeResult = await Authorize(retrievedEntity.EmailAddress, oldPassword, cancellationToken).ConfigureAwait(false);
 				if (!authorizeResult.Success)
 				{
 					return new ResetPasswordResult
@@ -242,7 +243,7 @@ namespace DiyAuth.AuthenticationProviders
 			}
 		}
 
-		public async Task<AuthorizeResult> GenerateTokenForIdentityId(Guid identityId)
+		public async Task<AuthorizeResult> GenerateTokenForIdentityId(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			var retrieveOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, identityId.ToString());
 			var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
@@ -266,7 +267,7 @@ namespace DiyAuth.AuthenticationProviders
 			};
 		}
 
-		public async Task DeleteToken(string token)
+		public async Task DeleteToken(string token, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			var deleteEntity = new AzureTokenEntity
 			{
@@ -279,7 +280,7 @@ namespace DiyAuth.AuthenticationProviders
 			var result = await this.TokenTable.ExecuteAsync(deleteOperation).ConfigureAwait(false);
 		}
 
-		public async Task DeleteIdentity(Guid identityId)
+		public async Task DeleteIdentity(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			// Retrieve identity entity
 			var retrieveOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, identityId.ToString());

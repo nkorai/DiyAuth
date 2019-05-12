@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using Amazon;
 using Amazon.DynamoDBv2;
+using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
 using DiyAuth.AuthenticationEntities.AWS;
 using DiyAuth.Models;
@@ -20,6 +22,9 @@ namespace DiyAuth.AuthenticationProviders
 
 		public string IdentityTableName { get; set; } = Constants.TableNames.IdentityTable;
 		public string TokenTableName { get; set; } = Constants.TableNames.TokenTable;
+
+		public Table IdentityTable { get; set; }
+		public Table TokenTable { get; set; }
 
 		public IAmazonDynamoDB DynamoDbClient { get; private set; }
 
@@ -145,6 +150,9 @@ namespace DiyAuth.AuthenticationProviders
 					await Task.Delay(TimeSpan.FromSeconds(5));
 				}
 			}
+
+			this.IdentityTable = Table.LoadTable(this.DynamoDbClient, IdentityTableName);
+			this.TokenTable = Table.LoadTable(this.DynamoDbClient, TokenTableName);
 		}
 
 		private async Task<TableStatus> GetTableStatus(string tableName)
@@ -161,42 +169,79 @@ namespace DiyAuth.AuthenticationProviders
 			}
 		}
 
-		public Task<AuthenticateResult> Authenticate(string token)
+		public Task<AuthenticateResult> Authenticate(string token, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			throw new NotImplementedException();
 		}
 
-		public Task<AuthorizeResult> Authorize(string emailAddress, string password)
+		public Task<AuthorizeResult> Authorize(string emailAddress, string password, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			throw new NotImplementedException();
 		}
 
-		public Task<ResetPasswordResult> ChangePassword(Guid identityId, string oldPassword, string newPassword)
+		public Task<ResetPasswordResult> ChangePassword(Guid identityId, string oldPassword, string newPassword, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			throw new NotImplementedException();
 		}
 
-		public Task<bool> CheckIdentityExists(string emailAddress)
+		public Task<bool> CheckIdentityExists(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			throw new NotImplementedException();
 		}
 
-		public Task<CreateIdentityResult> CreateIdentity(string emailAddress, string password)
+		public async Task<CreateIdentityResult> CreateIdentity(string emailAddress, string password, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			try
+			{
+				// Identity generation
+				var perUserSalt = Security.GeneratePerUserSalt();
+				var hashedPassword = Security.GeneratePasswordHash(password, perUserSalt);
+				var identityEntity = new AWSIdentityEntity()
+				{
+					IdentityId = Guid.NewGuid(),
+					EmailAddress = emailAddress,
+					PerUserSalt = perUserSalt,
+					HashedPassword = hashedPassword
+				};
+
+				var insertIdentityResponse = await this.IdentityTable.PutItemAsync(identityEntity, cancellationToken);
+
+				// Token generation
+				var token = Security.GenerateToken();
+				var tokenEntity = new AWSTokenEntity
+				{
+					IdentityId = identityEntity.IdentityId,
+					Token = token
+				};
+
+				var insertTokenResponse = await this.TokenTable.PutItemAsync(tokenEntity, cancellationToken);
+				return new CreateIdentityResult
+				{
+					Success = true,
+					IdentityId = identityEntity.IdentityId,
+					Token = tokenEntity.Token
+				};
+			}
+			catch (Exception)
+			{
+				return new CreateIdentityResult
+				{
+					Success = false
+				};
+			}
+		}
+
+		public Task DeleteIdentity(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			throw new NotImplementedException();
 		}
 
-		public Task DeleteIdentity(Guid identityId)
+		public Task DeleteToken(string token, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			throw new NotImplementedException();
 		}
 
-		public Task DeleteToken(string token)
-		{
-			throw new NotImplementedException();
-		}
-
-		public Task<AuthorizeResult> GenerateTokenForIdentityId(Guid identityId)
+		public Task<AuthorizeResult> GenerateTokenForIdentityId(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			throw new NotImplementedException();
 		}
