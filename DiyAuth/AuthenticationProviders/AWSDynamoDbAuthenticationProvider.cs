@@ -54,11 +54,25 @@ namespace DiyAuth.AuthenticationProviders
 						{
 							AttributeName = nameof(AWSIdentityEntity.IdentityId),
 							KeyType = KeyType.HASH
+						},
+						new KeySchemaElement
+						{
+							AttributeName = nameof(AWSIdentityEntity.EmailAddress),
+							KeyType = KeyType.RANGE
 						}
 					},
 					AttributeDefinitions = new List<AttributeDefinition>
 					{
-						new AttributeDefinition { AttributeName =  nameof(AWSIdentityEntity.EmailAddress), AttributeType = ScalarAttributeType.S }
+						new AttributeDefinition
+						{
+							AttributeName =  nameof(AWSIdentityEntity.IdentityId),
+							AttributeType = ScalarAttributeType.S
+						},
+						new AttributeDefinition
+						{
+							AttributeName =  nameof(AWSIdentityEntity.EmailAddress),
+							AttributeType = ScalarAttributeType.S
+						}
 					}
 				};
 
@@ -78,6 +92,24 @@ namespace DiyAuth.AuthenticationProviders
 						{
 							AttributeName = nameof(AWSTokenEntity.Token),
 							KeyType = KeyType.HASH
+						},
+						new KeySchemaElement
+						{
+							AttributeName = nameof(AWSTokenEntity.IdentityId),
+							KeyType = KeyType.RANGE
+						},
+					},
+					AttributeDefinitions = new List<AttributeDefinition>
+					{
+						new AttributeDefinition
+						{
+							AttributeName =  nameof(AWSTokenEntity.Token),
+							AttributeType = ScalarAttributeType.S
+						},
+						new AttributeDefinition
+						{
+							AttributeName =  nameof(AWSTokenEntity.IdentityId),
+							AttributeType = ScalarAttributeType.S
 						}
 					}
 				};
