@@ -15,6 +15,30 @@ namespace SampleApp
 		{
 			this.InitializeComponent();
 			RegionsCombo.SelectedIndex = 0;
+
+			var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
+			var accessStringExists = localSettings.Values.ContainsKey(Constants.LocalStorage.AwsAccessKeyId);
+			if (accessStringExists)
+			{
+				AccessKeyIdTextBox.Text = localSettings.Values[Constants.LocalStorage.AwsAccessKeyId] as string;
+			}
+
+			var secretAccessKeyExists = localSettings.Values.ContainsKey(Constants.LocalStorage.AwsSecretAccessKey);
+			if (secretAccessKeyExists)
+			{
+				SecretAccessTextBox.Text = localSettings.Values[Constants.LocalStorage.AwsSecretAccessKey] as string;
+			}
+
+			var regionExists = localSettings.Values.ContainsKey(Constants.LocalStorage.AwsRegion);
+			if (regionExists)
+			{
+				var selectedRegion = localSettings.Values[Constants.LocalStorage.AwsRegion] as string;
+				var selectedIndex = RegionList.IndexOf(selectedRegion);
+				if (selectedIndex >= 0)
+				{
+					RegionsCombo.SelectedIndex = selectedIndex;
+				}
+			}
 		}
 
 		private async void Next_Click(object sender, RoutedEventArgs e)
