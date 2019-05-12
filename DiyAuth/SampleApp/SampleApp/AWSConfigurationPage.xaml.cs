@@ -2,30 +2,14 @@
 using DiyAuth;
 using System;
 using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
-
-// The Blank Page item template is documented at https://go.microsoft.com/fwlink/?LinkId=234238
 
 namespace SampleApp
 {
-	/// <summary>
-	/// An empty page that can be used on its own or navigated to within a Frame.
-	/// </summary>
 	public sealed partial class AWSConfigurationPage : Page
 	{
-		public readonly ObservableCollection<string> RegionList = new ObservableCollection<string>() { "USEast1", "CACentral1", "CNNorthWest1", "CNNorth1", "USGovCloudWest1", "USGovCloudEast1", "SAEast1", "APSoutheast1", "APSouth1", "APNortheast3", "APSoutheast2", "APNortheast1", "USEast2", "APNortheast2", "USWest2", "EUNorth1", "USWest1", "EUWest2", "EUWest3", "EUCentral1", "EUWest1" };
+		public readonly List<string> RegionList = new List<string>() { "APNortheast1", "APNortheast2", "APNortheast3", "APSouth1", "APSoutheast1", "APSoutheast2", "CACentral1", "CNNorth1", "CNNorthWest1", "EUCentral1", "EUNorth1", "EUWest1", "EUWest2", "EUWest3", "SAEast1", "USEast1", "USEast2", "USGovCloudEast1", "USGovCloudWest1", "USWest1", "USWest2" };
 
 		public AWSConfigurationPage()
 		{
