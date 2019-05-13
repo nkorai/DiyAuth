@@ -403,7 +403,34 @@ namespace DiyAuth.AuthenticationProviders
 
 		public async Task DeleteIdentity(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			throw new NotImplementedException();
+			// Retrieve identity entity
+			var identityResult = await this.IdentityTable.GetItemAsync(Constants.PartitionNames.IdentityPrimary, identityId.ToString(), cancellationToken);
+			var identityEntity = JsonConvert.DeserializeObject<AWSIdentityEntity>(identityResult.ToJson());
+
+			// Delete all authentication tokens associated with the Identity
+			var partitionKeyDescriptor = ":partitionKey";
+			var identityIdDescriptor = ":identityId";
+			var request = new QueryRequest
+			{
+				TableName = this.TokenTableName,
+				KeyConditionExpression = $"PartitionKey = {partitionKeyDescriptor}",
+				FilterExpression = $"IdentityId = {identityIdDescriptor}",
+				ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+				{
+					[identityIdDescriptor] = new AttributeValue { S = identityId.ToString() },
+					[partitionKeyDescriptor] = new AttributeValue { S = Constants.PartitionNames.TokenPrimary }
+				}
+			};
+
+			var tokensOnIdentityResult = await this.DynamoDbClient.QueryAsync(request);
+			foreach (var tokenResult in tokensOnIdentityResult.Items)
+			{
+				var tokenValue = tokenResult[nameof(AWSTokenEntity.Token)].S;
+				var tokenDeleteResult = await this.TokenTable.DeleteItemAsync(Constants.PartitionNames.TokenPrimary, tokenValue, cancellationToken);
+			}
+
+			// Delete Identity entity
+			var identityDeleteResult = await this.IdentityTable.DeleteItemAsync(Constants.PartitionNames.IdentityPrimary, identityId.ToString(), cancellationToken);
 		}
 
 		public async Task DeleteToken(string token, CancellationToken cancellationToken = default(CancellationToken))
