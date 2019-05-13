@@ -44,13 +44,13 @@ namespace DiyAuth.AuthenticationProviders
 			return provider;
 		}
 
-		public async Task Initialize()
+		public async Task Initialize(CancellationToken cancellationToken = default(CancellationToken))
 		{
 			var tablesAdded = false;
 			var allTables = new List<string>() { this.IdentityTableName, this.TokenTableName };
 
 			this.DynamoDbClient = new AmazonDynamoDBClient(this.AwsAccessKeyId, this.AwsSecretAccessKey, this.RegionEndpoint);
-			var tableResponse = await this.DynamoDbClient.ListTablesAsync();
+			var tableResponse = await this.DynamoDbClient.ListTablesAsync(cancellationToken).ConfigureAwait(false);
 			var currentTables = tableResponse.TableNames;
 
 			if (!currentTables.Contains(this.IdentityTableName))
@@ -126,7 +126,7 @@ namespace DiyAuth.AuthenticationProviders
 					},
 				};
 
-				await this.DynamoDbClient.CreateTableAsync(tableRequest);
+				await this.DynamoDbClient.CreateTableAsync(tableRequest, cancellationToken).ConfigureAwait(false);
 				tablesAdded = true;
 			}
 
@@ -164,7 +164,7 @@ namespace DiyAuth.AuthenticationProviders
 					}
 				};
 
-				await this.DynamoDbClient.CreateTableAsync(tableRequest);
+				await this.DynamoDbClient.CreateTableAsync(tableRequest, cancellationToken).ConfigureAwait(false);
 				tablesAdded = true;
 			}
 
@@ -175,7 +175,7 @@ namespace DiyAuth.AuthenticationProviders
 					var allActive = true;
 					foreach (var table in allTables)
 					{
-						var tableStatus = await GetTableStatus(table);
+						var tableStatus = await GetTableStatus(table, cancellationToken).ConfigureAwait(false);
 						var isTableActive = string.Equals(tableStatus, "ACTIVE", StringComparison.OrdinalIgnoreCase);
 						if (!isTableActive)
 						{
@@ -188,7 +188,7 @@ namespace DiyAuth.AuthenticationProviders
 						break;
 					}
 
-					await Task.Delay(TimeSpan.FromSeconds(5));
+					await Task.Delay(TimeSpan.FromSeconds(5), cancellationToken).ConfigureAwait(false);
 				}
 			}
 
@@ -196,11 +196,11 @@ namespace DiyAuth.AuthenticationProviders
 			this.TokenTable = Table.LoadTable(this.DynamoDbClient, TokenTableName);
 		}
 
-		private async Task<TableStatus> GetTableStatus(string tableName)
+		private async Task<TableStatus> GetTableStatus(string tableName, CancellationToken cancellationToken)
 		{
 			try
 			{
-				var tableRequest = await this.DynamoDbClient.DescribeTableAsync(new DescribeTableRequest { TableName = tableName });
+				var tableRequest = await this.DynamoDbClient.DescribeTableAsync(new DescribeTableRequest { TableName = tableName }, cancellationToken).ConfigureAwait(false);
 				var table = tableRequest.Table;
 				return table == null ? null : table.TableStatus;
 			}
@@ -214,7 +214,7 @@ namespace DiyAuth.AuthenticationProviders
 		{
 			try
 			{
-				var tokenResult = await this.TokenTable.GetItemAsync(Constants.PartitionNames.TokenPrimary, token, cancellationToken);
+				var tokenResult = await this.TokenTable.GetItemAsync(Constants.PartitionNames.TokenPrimary, token, cancellationToken).ConfigureAwait(false);
 				var tokenEntity = JsonConvert.DeserializeObject<AWSTokenEntity>(tokenResult.ToJson());
 				return new AuthenticateResult
 				{
@@ -236,7 +236,7 @@ namespace DiyAuth.AuthenticationProviders
 			try
 			{
 				// Check to see if email exists
-				var queryResponse = await QueryEmailSecondaryIndex(emailAddress);
+				var queryResponse = await QueryEmailSecondaryIndex(emailAddress, cancellationToken).ConfigureAwait(false);
 				if (queryResponse.Count != 1)
 				{
 					return new AuthorizeResult
@@ -249,7 +249,7 @@ namespace DiyAuth.AuthenticationProviders
 				var identityId = identitySecondaryResult[nameof(AWSIdentityEntity.IdentityId)].S;
 
 				// Retrieve IdentityEntity
-				var identityResult = await this.IdentityTable.GetItemAsync(Constants.PartitionNames.IdentityPrimary, identityId, cancellationToken);
+				var identityResult = await this.IdentityTable.GetItemAsync(Constants.PartitionNames.IdentityPrimary, identityId, cancellationToken).ConfigureAwait(false);
 				var identityEntity = JsonConvert.DeserializeObject<AWSIdentityEntity>(identityResult.ToJson());
 
 				// Check if provided password is valid
@@ -271,7 +271,7 @@ namespace DiyAuth.AuthenticationProviders
 				};
 
 				var tokenDocument = Document.FromJson(JsonConvert.SerializeObject(tokenEntity));
-				var putResponse = await this.TokenTable.PutItemAsync(tokenDocument, cancellationToken);
+				var putResponse = await this.TokenTable.PutItemAsync(tokenDocument, cancellationToken).ConfigureAwait(false);
 
 				return new AuthorizeResult
 				{
@@ -293,7 +293,7 @@ namespace DiyAuth.AuthenticationProviders
 		{
 			try
 			{
-				var identityResult = await this.IdentityTable.GetItemAsync(Constants.PartitionNames.IdentityPrimary, identityId.ToString());
+				var identityResult = await this.IdentityTable.GetItemAsync(Constants.PartitionNames.IdentityPrimary, identityId.ToString(), cancellationToken).ConfigureAwait(false);
 				var identityEntity = JsonConvert.DeserializeObject<AWSIdentityEntity>(identityResult.ToJson());
 
 				var authorizeResult = await Authorize(identityEntity.EmailAddress, oldPassword, cancellationToken).ConfigureAwait(false);
@@ -312,7 +312,7 @@ namespace DiyAuth.AuthenticationProviders
 				identityEntity.HashedPassword = hashedPassword;
 
 				var identityDocument = Document.FromJson(JsonConvert.SerializeObject(identityEntity));
-				var putResult = await this.IdentityTable.UpdateItemAsync(identityDocument, cancellationToken);
+				var putResult = await this.IdentityTable.UpdateItemAsync(identityDocument, cancellationToken).ConfigureAwait(false);
 
 				return new ResetPasswordResult
 				{
@@ -330,7 +330,7 @@ namespace DiyAuth.AuthenticationProviders
 
 		public async Task<bool> CheckIdentityExists(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			var result = await QueryEmailSecondaryIndex(emailAddress);
+			var result = await QueryEmailSecondaryIndex(emailAddress, cancellationToken).ConfigureAwait(false);
 			var identityExists = result.Count > 0;
 			return identityExists;
 		}
@@ -352,7 +352,7 @@ namespace DiyAuth.AuthenticationProviders
 				ScanIndexForward = true
 			};
 
-			var result = await this.DynamoDbClient.QueryAsync(queryRequest);
+			var result = await this.DynamoDbClient.QueryAsync(queryRequest, cancellationToken).ConfigureAwait(false);
 			return result;
 		}
 
@@ -372,7 +372,7 @@ namespace DiyAuth.AuthenticationProviders
 				};
 
 				var identityDocument = Document.FromJson(JsonConvert.SerializeObject(identityEntity));
-				var insertIdentityResponse = await this.IdentityTable.PutItemAsync(identityDocument, cancellationToken);
+				var insertIdentityResponse = await this.IdentityTable.PutItemAsync(identityDocument, cancellationToken).ConfigureAwait(false);
 
 				// Token generation
 				var token = Security.GenerateToken();
@@ -384,7 +384,7 @@ namespace DiyAuth.AuthenticationProviders
 
 
 				var tokenDocument = Document.FromJson(JsonConvert.SerializeObject(tokenEntity));
-				var insertTokenResponse = await this.TokenTable.PutItemAsync(tokenDocument, cancellationToken);
+				var insertTokenResponse = await this.TokenTable.PutItemAsync(tokenDocument, cancellationToken).ConfigureAwait(false);
 				return new CreateIdentityResult
 				{
 					Success = true,
@@ -404,7 +404,7 @@ namespace DiyAuth.AuthenticationProviders
 		public async Task DeleteIdentity(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			// Retrieve identity entity
-			var identityResult = await this.IdentityTable.GetItemAsync(Constants.PartitionNames.IdentityPrimary, identityId.ToString(), cancellationToken);
+			var identityResult = await this.IdentityTable.GetItemAsync(Constants.PartitionNames.IdentityPrimary, identityId.ToString(), cancellationToken).ConfigureAwait(false);
 			var identityEntity = JsonConvert.DeserializeObject<AWSIdentityEntity>(identityResult.ToJson());
 
 			// Delete all authentication tokens associated with the Identity
@@ -422,25 +422,25 @@ namespace DiyAuth.AuthenticationProviders
 				}
 			};
 
-			var tokensOnIdentityResult = await this.DynamoDbClient.QueryAsync(request);
+			var tokensOnIdentityResult = await this.DynamoDbClient.QueryAsync(request, cancellationToken).ConfigureAwait(false);
 			foreach (var tokenResult in tokensOnIdentityResult.Items)
 			{
 				var tokenValue = tokenResult[nameof(AWSTokenEntity.Token)].S;
-				var tokenDeleteResult = await this.TokenTable.DeleteItemAsync(Constants.PartitionNames.TokenPrimary, tokenValue, cancellationToken);
+				var tokenDeleteResult = await this.TokenTable.DeleteItemAsync(Constants.PartitionNames.TokenPrimary, tokenValue, cancellationToken).ConfigureAwait(false);
 			}
 
 			// Delete Identity entity
-			var identityDeleteResult = await this.IdentityTable.DeleteItemAsync(Constants.PartitionNames.IdentityPrimary, identityId.ToString(), cancellationToken);
+			var identityDeleteResult = await this.IdentityTable.DeleteItemAsync(Constants.PartitionNames.IdentityPrimary, identityId.ToString(), cancellationToken).ConfigureAwait(false);
 		}
 
 		public async Task DeleteToken(string token, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			var deleteResult = await this.TokenTable.DeleteItemAsync(Constants.PartitionNames.TokenPrimary, token, cancellationToken);
+			var deleteResult = await this.TokenTable.DeleteItemAsync(Constants.PartitionNames.TokenPrimary, token, cancellationToken).ConfigureAwait(false);
 		}
 
 		public async Task<AuthorizeResult> GenerateTokenForIdentityId(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			var identityResult = await this.IdentityTable.GetItemAsync(Constants.PartitionNames.IdentityPrimary, identityId.ToString(), cancellationToken);
+			var identityResult = await this.IdentityTable.GetItemAsync(Constants.PartitionNames.IdentityPrimary, identityId.ToString(), cancellationToken).ConfigureAwait(false);
 			var identityEntity = JsonConvert.DeserializeObject<AWSIdentityEntity>(identityResult.ToJson());
 
 			var token = Security.GenerateToken();
@@ -451,7 +451,7 @@ namespace DiyAuth.AuthenticationProviders
 			};
 
 			var tokenDocument = Document.FromJson(JsonConvert.SerializeObject(tokenEntity));
-			var tokenInsertResult = await this.TokenTable.PutItemAsync(tokenDocument, cancellationToken);
+			var tokenInsertResult = await this.TokenTable.PutItemAsync(tokenDocument, cancellationToken).ConfigureAwait(false);
 
 			return new AuthorizeResult
 			{
