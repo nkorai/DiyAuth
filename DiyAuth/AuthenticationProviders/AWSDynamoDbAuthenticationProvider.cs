@@ -67,7 +67,7 @@ namespace DiyAuth.AuthenticationProviders
 						},
 						new KeySchemaElement // Sort key
 						{
-							AttributeName = nameof(AWSIdentityEntity.EmailAddress),
+							AttributeName = nameof(AWSIdentityEntity.IdentityId),
 							KeyType = KeyType.RANGE
 						}
 					},
@@ -106,7 +106,7 @@ namespace DiyAuth.AuthenticationProviders
 							Projection = new Projection
 							{
 								ProjectionType = "INCLUDE",
-								NonKeyAttributes = new List<string>() { nameof(AWSIdentityEntity.EmailAddress) }
+								NonKeyAttributes = new List<string>() { nameof(AWSIdentityEntity.IdentityId) }
 							},
 							KeySchema = new List<KeySchemaElement>
 							{
@@ -117,7 +117,7 @@ namespace DiyAuth.AuthenticationProviders
 								},
 								new KeySchemaElement
 									{
-									AttributeName = nameof(AWSIdentityEntity.IdentityId),
+									AttributeName = nameof(AWSIdentityEntity.EmailAddress),
 									KeyType = KeyType.RANGE
 								}
 							}
@@ -226,8 +226,25 @@ namespace DiyAuth.AuthenticationProviders
 
 		public async Task<bool> CheckIdentityExists(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			//var identity = await this.IdentityTable.GetItemAsync(emailAddress, cancellationToken);
-			return false;
+			var partitionKeyDescriptor = ":partitionKey";
+			var emailDescriptor = ":partition";
+			var queryRequest = new QueryRequest
+			{
+				TableName = this.IdentityTableName,
+				IndexName = Constants.PartitionNames.IdentityForeignKey,
+				KeyConditionExpression = $"SecondaryPartitionKey = {partitionKeyDescriptor} and EmailAddress = {emailDescriptor}",
+				ExpressionAttributeValues = new Dictionary<string, AttributeValue>
+				{
+					[partitionKeyDescriptor] = new AttributeValue { S = Constants.PartitionNames.IdentityForeignKey },
+					[emailDescriptor] = new AttributeValue { S = emailAddress }
+				},
+				ScanIndexForward = true
+			};
+
+			var result = await this.DynamoDbClient.QueryAsync(queryRequest);
+
+			var identityExists = result.Count > 0;
+			return identityExists;
 		}
 
 		public async Task<CreateIdentityResult> CreateIdentity(string emailAddress, string password, CancellationToken cancellationToken = default(CancellationToken))
