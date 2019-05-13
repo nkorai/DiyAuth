@@ -25,7 +25,7 @@ namespace SampleApp
 
 	sealed partial class App : Application
 	{
-		public static AzureTableStorageAuthenticationProvider Authenticator;
+		public static IAuthenticationProvider Authenticator;
 		public static string ConnectionString;
 		public static string Token;
 		public static Guid? IdentityId;
@@ -82,7 +82,7 @@ namespace SampleApp
 					// When the navigation stack isn't restored navigate to the first page,
 					// configuring the new page by passing required information as a navigation
 					// parameter
-					rootFrame.Navigate(typeof(MainPage), e.Arguments);
+					rootFrame.Navigate(typeof(BackendProviderPage), e.Arguments);
 				}
 				// Ensure the current window is active
 				Window.Current.Activate();
