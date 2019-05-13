@@ -10,6 +10,7 @@ using Amazon.DynamoDBv2.Model;
 using DiyAuth.AuthenticationEntities.AWS;
 using DiyAuth.Models;
 using DiyAuth.Utility;
+using Newtonsoft.Json;
 
 namespace DiyAuth.AuthenticationProviders
 {
@@ -59,12 +60,12 @@ namespace DiyAuth.AuthenticationProviders
 					ProvisionedThroughput = new ProvisionedThroughput { ReadCapacityUnits = 10, WriteCapacityUnits = 10 },
 					KeySchema = new List<KeySchemaElement>
 					{
-						new KeySchemaElement
+						new KeySchemaElement // Partition
 						{
-							AttributeName = nameof(AWSIdentityEntity.IdentityId),
+							AttributeName = nameof(Constants.PartitionNames.IdentityPrimary),
 							KeyType = KeyType.HASH
 						},
-						new KeySchemaElement
+						new KeySchemaElement // Sort key
 						{
 							AttributeName = nameof(AWSIdentityEntity.EmailAddress),
 							KeyType = KeyType.RANGE
@@ -82,7 +83,36 @@ namespace DiyAuth.AuthenticationProviders
 							AttributeName =  nameof(AWSIdentityEntity.EmailAddress),
 							AttributeType = ScalarAttributeType.S
 						}
-					}
+					},
+					GlobalSecondaryIndexes = new List<GlobalSecondaryIndex>{
+						new GlobalSecondaryIndex
+						{
+							IndexName = Constants.PartitionNames.IdentityForeignKey,
+							ProvisionedThroughput = new ProvisionedThroughput
+							{
+								ReadCapacityUnits = 10,
+								WriteCapacityUnits = 1
+							},
+							Projection = new Projection
+							{
+								ProjectionType = "INCLUDE",
+								NonKeyAttributes = new List<string>() { nameof(AWSIdentityEntity.EmailAddress) }
+							},
+							KeySchema = new List<KeySchemaElement>
+							{
+								new KeySchemaElement
+								{
+									AttributeName = nameof(Constants.PartitionNames.IdentityForeignKey),
+									KeyType = KeyType.HASH
+								},
+								new KeySchemaElement
+									{
+									AttributeName = nameof(AWSIdentityEntity.IdentityId),
+									KeyType = KeyType.RANGE
+								}
+							}
+						}
+					},
 				};
 
 				await this.DynamoDbClient.CreateTableAsync(tableRequest);
@@ -169,24 +199,25 @@ namespace DiyAuth.AuthenticationProviders
 			}
 		}
 
-		public Task<AuthenticateResult> Authenticate(string token, CancellationToken cancellationToken = default(CancellationToken))
+		public async Task<AuthenticateResult> Authenticate(string token, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			throw new NotImplementedException();
 		}
 
-		public Task<AuthorizeResult> Authorize(string emailAddress, string password, CancellationToken cancellationToken = default(CancellationToken))
+		public async Task<AuthorizeResult> Authorize(string emailAddress, string password, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			throw new NotImplementedException();
 		}
 
-		public Task<ResetPasswordResult> ChangePassword(Guid identityId, string oldPassword, string newPassword, CancellationToken cancellationToken = default(CancellationToken))
+		public async Task<ResetPasswordResult> ChangePassword(Guid identityId, string oldPassword, string newPassword, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			throw new NotImplementedException();
 		}
 
-		public Task<bool> CheckIdentityExists(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
+		public async Task<bool> CheckIdentityExists(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			throw new NotImplementedException();
+			//var identity = await this.IdentityTable.GetItemAsync(emailAddress, cancellationToken);
+			return false;
 		}
 
 		public async Task<CreateIdentityResult> CreateIdentity(string emailAddress, string password, CancellationToken cancellationToken = default(CancellationToken))
@@ -204,7 +235,8 @@ namespace DiyAuth.AuthenticationProviders
 					HashedPassword = hashedPassword
 				};
 
-				var insertIdentityResponse = await this.IdentityTable.PutItemAsync(identityEntity, cancellationToken);
+				var identityDocument = Document.FromJson(JsonConvert.SerializeObject(identityEntity));
+				var insertIdentityResponse = await this.IdentityTable.PutItemAsync(identityDocument, cancellationToken);
 
 				// Token generation
 				var token = Security.GenerateToken();
@@ -214,7 +246,9 @@ namespace DiyAuth.AuthenticationProviders
 					Token = token
 				};
 
-				var insertTokenResponse = await this.TokenTable.PutItemAsync(tokenEntity, cancellationToken);
+
+				var tokenDocument = Document.FromJson(JsonConvert.SerializeObject(tokenEntity));
+				var insertTokenResponse = await this.TokenTable.PutItemAsync(tokenDocument, cancellationToken);
 				return new CreateIdentityResult
 				{
 					Success = true,
@@ -231,17 +265,17 @@ namespace DiyAuth.AuthenticationProviders
 			}
 		}
 
-		public Task DeleteIdentity(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
+		public async Task DeleteIdentity(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			throw new NotImplementedException();
 		}
 
-		public Task DeleteToken(string token, CancellationToken cancellationToken = default(CancellationToken))
+		public async Task DeleteToken(string token, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			throw new NotImplementedException();
 		}
 
-		public Task<AuthorizeResult> GenerateTokenForIdentityId(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
+		public async Task<AuthorizeResult> GenerateTokenForIdentityId(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			throw new NotImplementedException();
 		}

@@ -5,7 +5,7 @@ using System.Text;
 
 namespace DiyAuth.AuthenticationEntities.AWS
 {
-	public class AWSTokenEntity : Document, ITokenEntity
+	public class AWSTokenEntity : ITokenEntity
 	{
 		public string Token { get; set; }
 		public Guid IdentityId { get; set; }
