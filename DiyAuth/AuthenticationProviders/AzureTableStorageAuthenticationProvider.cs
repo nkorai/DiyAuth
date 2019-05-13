@@ -35,7 +35,7 @@ namespace DiyAuth.AuthenticationProviders
 			return provider;
 		}
 
-		public async Task Initialize()
+		public async Task Initialize(CancellationToken cancellationToken = default(CancellationToken))
 		{
 			this.StorageAccount = CloudStorageAccount.Parse(this.ConnectionString);
 			this.TableClient = this.StorageAccount.CreateCloudTableClient();
@@ -43,8 +43,8 @@ namespace DiyAuth.AuthenticationProviders
 			this.IdentityTable = this.TableClient.GetTableReference(this.IdentityTableName);
 			this.TokenTable = this.TableClient.GetTableReference(this.TokenTableName);
 
-			await this.IdentityTable.CreateIfNotExistsAsync().ConfigureAwait(false);
-			await this.TokenTable.CreateIfNotExistsAsync().ConfigureAwait(false);
+			await this.IdentityTable.CreateIfNotExistsAsync(null, null, cancellationToken).ConfigureAwait(false);
+			await this.TokenTable.CreateIfNotExistsAsync(null, null, cancellationToken).ConfigureAwait(false);
 		}
 
 		public async Task<AuthenticateResult> Authenticate(string token, CancellationToken cancellationToken = default(CancellationToken))
@@ -52,7 +52,7 @@ namespace DiyAuth.AuthenticationProviders
 			try
 			{
 				var retrieveOperation = TableOperation.Retrieve<AzureTokenEntity>(Constants.PartitionNames.TokenPrimary, token);
-				var retrievedResult = await this.TokenTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
+				var retrievedResult = await this.TokenTable.ExecuteAsync(retrieveOperation, null, null, cancellationToken).ConfigureAwait(false);
 				var retrievedEntity = (AzureTokenEntity)retrievedResult?.Result;
 				return new AuthenticateResult
 				{
@@ -75,7 +75,7 @@ namespace DiyAuth.AuthenticationProviders
 			{
 				// Check to see if email exists
 				var retrieveOperation = TableOperation.Retrieve<AzureIdentityForeignKeyEntity>(Constants.PartitionNames.IdentityForeignKey, emailAddress);
-				var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
+				var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation, null, null, cancellationToken).ConfigureAwait(false);
 				var retrievedEntity = (AzureIdentityForeignKeyEntity)retrievedResult?.Result;
 				if (retrievedEntity == null)
 				{
@@ -87,7 +87,7 @@ namespace DiyAuth.AuthenticationProviders
 
 				// Retrieve IdentityEntity
 				var retrieveIdentityOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, retrievedEntity.IdentityId.ToString());
-				var retrievedIdentityResult = await this.IdentityTable.ExecuteAsync(retrieveIdentityOperation).ConfigureAwait(false);
+				var retrievedIdentityResult = await this.IdentityTable.ExecuteAsync(retrieveIdentityOperation, null, null, cancellationToken).ConfigureAwait(false);
 				var retrievedIdentityEntity = (AzureIdentityEntity)retrievedIdentityResult?.Result;
 
 				// Check if provided password is valid
@@ -109,7 +109,7 @@ namespace DiyAuth.AuthenticationProviders
 				};
 
 				var createOperation = TableOperation.Insert(tokenEntity);
-				var result = await this.TokenTable.ExecuteAsync(createOperation).ConfigureAwait(false);
+				var result = await this.TokenTable.ExecuteAsync(createOperation, null, null, cancellationToken).ConfigureAwait(false);
 				return new AuthorizeResult
 				{
 					Success = true,
@@ -153,8 +153,8 @@ namespace DiyAuth.AuthenticationProviders
 				var createForeignKeyOperation = TableOperation.Insert(foreignKey);
 
 				// Insert identity information
-				await this.IdentityTable.ExecuteAsync(createForeignKeyOperation).ConfigureAwait(false); // This insert first to ensure there isn't a key conflict
-				await this.IdentityTable.ExecuteAsync(createIdentityOperation).ConfigureAwait(false);
+				await this.IdentityTable.ExecuteAsync(createForeignKeyOperation, null, null, cancellationToken).ConfigureAwait(false); // This insert first to ensure there isn't a key conflict
+				await this.IdentityTable.ExecuteAsync(createIdentityOperation, null, null, cancellationToken).ConfigureAwait(false);
 
 				// Token generation
 				var token = Security.GenerateToken();
@@ -165,7 +165,7 @@ namespace DiyAuth.AuthenticationProviders
 				};
 
 				var createTokenOperation = TableOperation.Insert(tokenEntity);
-				await this.TokenTable.ExecuteAsync(createTokenOperation).ConfigureAwait(false);
+				await this.TokenTable.ExecuteAsync(createTokenOperation, null, null, cancellationToken).ConfigureAwait(false);
 
 				return new CreateIdentityResult
 				{
@@ -188,7 +188,7 @@ namespace DiyAuth.AuthenticationProviders
 			try
 			{
 				var retrieveOperation = TableOperation.Retrieve<AzureIdentityForeignKeyEntity>(Constants.PartitionNames.IdentityForeignKey, emailAddress);
-				var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
+				var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation, null, null, cancellationToken).ConfigureAwait(false);
 				var retrievedEntity = (AzureIdentityForeignKeyEntity)retrievedResult?.Result;
 				if (retrievedEntity == null)
 				{
@@ -208,7 +208,7 @@ namespace DiyAuth.AuthenticationProviders
 			try
 			{
 				var retrieveOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, identityId.ToString());
-				var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
+				var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation, null, null, cancellationToken).ConfigureAwait(false);
 				var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
 
 				var authorizeResult = await Authorize(retrievedEntity.EmailAddress, oldPassword, cancellationToken).ConfigureAwait(false);
@@ -227,7 +227,7 @@ namespace DiyAuth.AuthenticationProviders
 				retrievedEntity.HashedPassword = hashedPassword;
 
 				var setOperation = TableOperation.InsertOrReplace(retrievedEntity);
-				var result = await this.IdentityTable.ExecuteAsync(setOperation).ConfigureAwait(false);
+				var result = await this.IdentityTable.ExecuteAsync(setOperation, null, null, cancellationToken).ConfigureAwait(false);
 
 				return new ResetPasswordResult
 				{
@@ -246,7 +246,7 @@ namespace DiyAuth.AuthenticationProviders
 		public async Task<AuthorizeResult> GenerateTokenForIdentityId(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			var retrieveOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, identityId.ToString());
-			var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
+			var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation, null, null, cancellationToken).ConfigureAwait(false);
 			var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
 
 			var token = Security.GenerateToken();
@@ -257,7 +257,7 @@ namespace DiyAuth.AuthenticationProviders
 			};
 
 			var createTokenOperation = TableOperation.Insert(tokenEntity);
-			await this.TokenTable.ExecuteAsync(createTokenOperation).ConfigureAwait(false);
+			await this.TokenTable.ExecuteAsync(createTokenOperation, null, null, cancellationToken).ConfigureAwait(false);
 
 			return new AuthorizeResult
 			{
@@ -277,14 +277,14 @@ namespace DiyAuth.AuthenticationProviders
 			};
 
 			var deleteOperation = TableOperation.Delete(deleteEntity);
-			var result = await this.TokenTable.ExecuteAsync(deleteOperation).ConfigureAwait(false);
+			var result = await this.TokenTable.ExecuteAsync(deleteOperation, null, null, cancellationToken).ConfigureAwait(false);
 		}
 
 		public async Task DeleteIdentity(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			// Retrieve identity entity
 			var retrieveOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, identityId.ToString());
-			var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation).ConfigureAwait(false);
+			var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation, null, null, cancellationToken).ConfigureAwait(false);
 			var retrievedEntity = (AzureIdentityEntity)retrievedResult?.Result;
 
 			// Delete both foreign key as well as identity record
@@ -314,7 +314,7 @@ namespace DiyAuth.AuthenticationProviders
 			TableContinuationToken continuationToken = null;
 			do
 			{
-				var segmentResult = await this.TokenTable.ExecuteQuerySegmentedAsync(query, continuationToken);
+				var segmentResult = await this.TokenTable.ExecuteQuerySegmentedAsync(query, continuationToken, null, null, cancellationToken);
 				var batchOption = new TableBatchOperation();
 				foreach (var entity in segmentResult.Results)
 				{
@@ -323,7 +323,7 @@ namespace DiyAuth.AuthenticationProviders
 
 				if (batchOption.Count > 0)
 				{
-					await this.TokenTable.ExecuteBatchAsync(batchOption).ConfigureAwait(false);
+					await this.TokenTable.ExecuteBatchAsync(batchOption, null, null, cancellationToken).ConfigureAwait(false);
 				}
 
 				continuationToken = segmentResult.ContinuationToken;
@@ -333,8 +333,8 @@ namespace DiyAuth.AuthenticationProviders
 			var deleteEntityOperation = TableOperation.Delete(deleteIdentityEntity);
 			var deleteForeignKeyOperation = TableOperation.Delete(deleteForeignKeyEntity);
 
-			var entityDeleteResult = await this.IdentityTable.ExecuteAsync(deleteEntityOperation).ConfigureAwait(false);
-			var foreignKeyDeleteResult = await this.IdentityTable.ExecuteAsync(deleteForeignKeyOperation).ConfigureAwait(false);
+			var entityDeleteResult = await this.IdentityTable.ExecuteAsync(deleteEntityOperation, null, null, cancellationToken).ConfigureAwait(false);
+			var foreignKeyDeleteResult = await this.IdentityTable.ExecuteAsync(deleteForeignKeyOperation, null, null, cancellationToken).ConfigureAwait(false);
 		}
 	}
 }
