@@ -62,7 +62,7 @@ namespace DiyAuth.AuthenticationProviders
 					{
 						new KeySchemaElement // Partition
 						{
-							AttributeName = nameof(Constants.PartitionNames.IdentityPrimary),
+							AttributeName = nameof(AWSIdentityEntity.PartitionKey),
 							KeyType = KeyType.HASH
 						},
 						new KeySchemaElement // Sort key
@@ -73,6 +73,16 @@ namespace DiyAuth.AuthenticationProviders
 					},
 					AttributeDefinitions = new List<AttributeDefinition>
 					{
+						new AttributeDefinition
+						{
+							AttributeName =  nameof(AWSIdentityEntity.PartitionKey),
+							AttributeType = ScalarAttributeType.S
+						},
+						new AttributeDefinition
+						{
+							AttributeName =  nameof(AWSIdentityEntity.SecondaryPartitionKey),
+							AttributeType = ScalarAttributeType.S
+						},
 						new AttributeDefinition
 						{
 							AttributeName =  nameof(AWSIdentityEntity.IdentityId),
@@ -102,7 +112,7 @@ namespace DiyAuth.AuthenticationProviders
 							{
 								new KeySchemaElement
 								{
-									AttributeName = nameof(Constants.PartitionNames.IdentityForeignKey),
+									AttributeName = nameof(AWSIdentityEntity.SecondaryPartitionKey),
 									KeyType = KeyType.HASH
 								},
 								new KeySchemaElement
@@ -129,12 +139,12 @@ namespace DiyAuth.AuthenticationProviders
 					{
 						new KeySchemaElement
 						{
-							AttributeName = nameof(AWSTokenEntity.Token),
+							AttributeName = nameof(AWSTokenEntity.PartitionKey),
 							KeyType = KeyType.HASH
 						},
 						new KeySchemaElement
 						{
-							AttributeName = nameof(AWSTokenEntity.IdentityId),
+							AttributeName = nameof(AWSTokenEntity.Token),
 							KeyType = KeyType.RANGE
 						},
 					},
@@ -142,12 +152,12 @@ namespace DiyAuth.AuthenticationProviders
 					{
 						new AttributeDefinition
 						{
-							AttributeName =  nameof(AWSTokenEntity.Token),
+							AttributeName =  nameof(AWSTokenEntity.PartitionKey),
 							AttributeType = ScalarAttributeType.S
 						},
 						new AttributeDefinition
 						{
-							AttributeName =  nameof(AWSTokenEntity.IdentityId),
+							AttributeName =  nameof(AWSTokenEntity.Token),
 							AttributeType = ScalarAttributeType.S
 						}
 					}
