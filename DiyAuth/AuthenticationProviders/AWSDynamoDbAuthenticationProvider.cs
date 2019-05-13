@@ -408,12 +408,30 @@ namespace DiyAuth.AuthenticationProviders
 
 		public async Task DeleteToken(string token, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			throw new NotImplementedException();
+			var deleteResult = await this.TokenTable.DeleteItemAsync(Constants.PartitionNames.TokenPrimary, token, cancellationToken);
 		}
 
 		public async Task<AuthorizeResult> GenerateTokenForIdentityId(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			throw new NotImplementedException();
+			var identityResult = await this.IdentityTable.GetItemAsync(Constants.PartitionNames.IdentityPrimary, identityId.ToString(), cancellationToken);
+			var identityEntity = JsonConvert.DeserializeObject<AWSIdentityEntity>(identityResult.ToJson());
+
+			var token = Security.GenerateToken();
+			var tokenEntity = new AWSTokenEntity
+			{
+				IdentityId = identityEntity.IdentityId,
+				Token = token
+			};
+
+			var tokenDocument = Document.FromJson(JsonConvert.SerializeObject(tokenEntity));
+			var tokenInsertResult = await this.TokenTable.PutItemAsync(tokenDocument, cancellationToken);
+
+			return new AuthorizeResult
+			{
+				Success = true,
+				Token = token,
+				IdentityId = identityId
+			};
 		}
 	}
 }
