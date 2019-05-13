@@ -100,7 +100,7 @@ namespace DiyAuth.AuthenticationProviders
 					};
 				}
 
-				// Genearte, store and return token
+				// Generate, store and return token
 				var token = Security.GenerateToken();
 				var tokenEntity = new AzureTokenEntity
 				{

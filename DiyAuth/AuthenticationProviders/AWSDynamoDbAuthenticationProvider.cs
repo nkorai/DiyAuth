@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -232,7 +233,60 @@ namespace DiyAuth.AuthenticationProviders
 
 		public async Task<AuthorizeResult> Authorize(string emailAddress, string password, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			throw new NotImplementedException();
+			try
+			{
+				// Check to see if email exists
+				var queryResponse = await QueryEmailSecondaryIndex(emailAddress);
+				if (queryResponse.Count != 1)
+				{
+					return new AuthorizeResult
+					{
+						Success = false
+					};
+				}
+
+				var identitySecondaryResult = queryResponse.Items.First();
+				var identityId = identitySecondaryResult[nameof(AWSIdentityEntity.IdentityId)].S;
+
+				// Retrieve IdentityEntity
+				var identityResult = await this.IdentityTable.GetItemAsync(Constants.PartitionNames.IdentityPrimary, identityId, cancellationToken);
+				var identityEntity = JsonConvert.DeserializeObject<AWSIdentityEntity>(identityResult.ToJson());
+
+				// Check if provided password is valid
+				var passwordMatches = Security.PasswordMatches(identityEntity.PerUserSalt, password, identityEntity.HashedPassword);
+				if (!passwordMatches)
+				{
+					return new AuthorizeResult
+					{
+						Success = false
+					};
+				}
+
+				// Generate, store and return token
+				var token = Security.GenerateToken();
+				var tokenEntity = new AWSTokenEntity
+				{
+					IdentityId = identityEntity.IdentityId,
+					Token = token
+				};
+
+				var tokenDocument = Document.FromJson(JsonConvert.SerializeObject(tokenEntity));
+				var putResponse = await this.TokenTable.PutItemAsync(tokenDocument, cancellationToken);
+
+				return new AuthorizeResult
+				{
+					Success = true,
+					IdentityId = identityEntity.IdentityId,
+					Token = token
+				};
+			}
+			catch (Exception)
+			{
+				return new AuthorizeResult
+				{
+					Success = false
+				};
+			}
 		}
 
 		public async Task<ResetPasswordResult> ChangePassword(Guid identityId, string oldPassword, string newPassword, CancellationToken cancellationToken = default(CancellationToken))
@@ -241,6 +295,13 @@ namespace DiyAuth.AuthenticationProviders
 		}
 
 		public async Task<bool> CheckIdentityExists(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			var result = await QueryEmailSecondaryIndex(emailAddress);
+			var identityExists = result.Count > 0;
+			return identityExists;
+		}
+
+		private async Task<QueryResponse> QueryEmailSecondaryIndex(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			var partitionKeyDescriptor = ":partitionKey";
 			var emailDescriptor = ":partition";
@@ -258,9 +319,7 @@ namespace DiyAuth.AuthenticationProviders
 			};
 
 			var result = await this.DynamoDbClient.QueryAsync(queryRequest);
-
-			var identityExists = result.Count > 0;
-			return identityExists;
+			return result;
 		}
 
 		public async Task<CreateIdentityResult> CreateIdentity(string emailAddress, string password, CancellationToken cancellationToken = default(CancellationToken))
