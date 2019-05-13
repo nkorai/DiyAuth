@@ -291,7 +291,41 @@ namespace DiyAuth.AuthenticationProviders
 
 		public async Task<ResetPasswordResult> ChangePassword(Guid identityId, string oldPassword, string newPassword, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			throw new NotImplementedException();
+			try
+			{
+				var identityResult = await this.IdentityTable.GetItemAsync(Constants.PartitionNames.IdentityPrimary, identityId.ToString());
+				var identityEntity = JsonConvert.DeserializeObject<AWSIdentityEntity>(identityResult.ToJson());
+
+				var authorizeResult = await Authorize(identityEntity.EmailAddress, oldPassword, cancellationToken).ConfigureAwait(false);
+				if (!authorizeResult.Success)
+				{
+					return new ResetPasswordResult
+					{
+						Success = false
+					};
+				}
+
+				var perUserSalt = Security.GeneratePerUserSalt();
+				var hashedPassword = Security.GeneratePasswordHash(newPassword, perUserSalt);
+
+				identityEntity.PerUserSalt = perUserSalt;
+				identityEntity.HashedPassword = hashedPassword;
+
+				var identityDocument = Document.FromJson(JsonConvert.SerializeObject(identityEntity));
+				var putResult = await this.IdentityTable.UpdateItemAsync(identityDocument, cancellationToken);
+
+				return new ResetPasswordResult
+				{
+					Success = true
+				};
+			}
+			catch (Exception)
+			{
+				return new ResetPasswordResult
+				{
+					Success = false
+				};
+			}
 		}
 
 		public async Task<bool> CheckIdentityExists(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
