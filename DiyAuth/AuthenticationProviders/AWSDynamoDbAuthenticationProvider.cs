@@ -211,7 +211,23 @@ namespace DiyAuth.AuthenticationProviders
 
 		public async Task<AuthenticateResult> Authenticate(string token, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			throw new NotImplementedException();
+			try
+			{
+				var tokenResult = await this.TokenTable.GetItemAsync(Constants.PartitionNames.TokenPrimary, token, cancellationToken);
+				var tokenEntity = JsonConvert.DeserializeObject<AWSTokenEntity>(tokenResult.ToJson());
+				return new AuthenticateResult
+				{
+					Success = true,
+					IdentityId = tokenEntity.IdentityId
+				};
+			}
+			catch (Exception)
+			{
+				return new AuthenticateResult
+				{
+					Success = false
+				};
+			}
 		}
 
 		public async Task<AuthorizeResult> Authorize(string emailAddress, string password, CancellationToken cancellationToken = default(CancellationToken))
