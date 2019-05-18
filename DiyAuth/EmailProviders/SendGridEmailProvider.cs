@@ -15,6 +15,10 @@ namespace DiyAuth.EmailProviders
 		// Interface properties
 		public IAuthenticationProvider AuthenticationProvider { get; set; }
 
+		public Uri VerificationTokenRedirectUri { get; set; }
+		public Uri ForgotPasswordRedirectUri { get; set; }
+		public Uri TwoFactorAuthenticationRedirectUri { get; set; }
+
 		public string VerificationTokenEmailTemplate { get; set; }
 		public string ForgotPasswordEmailTemplate { get; set; }
 		public string TwoFactorAuthenticationEmailTemplate { get; set; }
@@ -25,7 +29,7 @@ namespace DiyAuth.EmailProviders
 		public string CompanyName { get; set; }
 		public SendGridClient Client { get; set; }
 
-		public SendGridEmailProvider(string apiKey, string fromEmail, string companyName)
+		public SendGridEmailProvider(string apiKey, string fromEmail, string companyName, string verificationTokenRedirectUri, string forgotPasswordRedirectUri, string twoFactorAuthRedirectUri)
 		{
 			this.ApiKey = apiKey;
 			this.CompanyName = companyName;
@@ -36,29 +40,23 @@ namespace DiyAuth.EmailProviders
 			this.TwoFactorAuthenticationEmailTemplate = Resources.TwoFactorTemplate;
 		}
 
-		public static SendGridEmailProvider Create(string apiKey, string fromEmail, string companyName)
+		public static SendGridEmailProvider Create(string apiKey, string fromEmail, string companyName, string verificationTokenRedirectUri, string forgotPasswordRedirectUri, string twoFactorAuthRedirectUri)
 		{
-			var provider = new SendGridEmailProvider(apiKey, fromEmail, companyName);
+			var provider = new SendGridEmailProvider(apiKey, fromEmail, companyName, verificationTokenRedirectUri, forgotPasswordRedirectUri, twoFactorAuthRedirectUri);
 			return provider;
 		}
 
 		public async Task SendForgotPasswordEmail(string emailAddress, string subject, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			var identityExists = await this.AuthenticationProvider.CheckIdentityExists(emailAddress).ConfigureAwait(false);
-			if (identityExists)
-			{
-				throw new KeyNotFoundException($"The EmailAddress '{emailAddress}' was not found");
-			}
+			var identityEntity = await this.AuthenticationProvider.GetIdentityByEmail(emailAddress).ConfigureAwait(false);
 
-			// TODO: 
-			// Generate verification token
-			var verificationToken = "";
-			var verificationTokenLink = "";
+			var verificationToken = await this.AuthenticationProvider.GenerateVerificationToken(identityEntity.IdentityId);
+			var verificationTokenLink = this.ForgotPasswordRedirectUri.AbsoluteUri.Trim('/') +  "/" + verificationToken;
 
 			var content = this.ForgotPasswordEmailTemplate;
 			content = content.Replace("##__Subject__##", subject);
 			content = content.Replace("##__CompanyName__##", this.CompanyName);
-			content = content.Replace("##__VerificationTokenLink__#", verificationTokenLink);
+			content = content.Replace("##__VerificationTokenLink__##", verificationTokenLink);
 
 			var from = new EmailAddress(this.FromEmail);
 			var to = new EmailAddress(emailAddress);
@@ -71,15 +69,13 @@ namespace DiyAuth.EmailProviders
 		{
 			var identityEntity = await this.AuthenticationProvider.GetIdentityById(identityId).ConfigureAwait(false);
 
-			// TODO: 
-			// Generate verification token
-			var verificationToken = "";
-			var verificationTokenLink = "";
+			var verificationToken = await this.AuthenticationProvider.GenerateVerificationToken(identityEntity.IdentityId);
+			var verificationTokenLink = this.VerificationTokenRedirectUri.AbsoluteUri.Trim('/') + "/" + verificationToken;
 
 			var content = this.VerificationTokenEmailTemplate;
 			content = content.Replace("##__Subject__##", subject);
 			content = content.Replace("##__CompanyName__##", this.CompanyName);
-			content = content.Replace("##__VerificationTokenLink__#", verificationTokenLink);
+			content = content.Replace("##__VerificationTokenLink__##", verificationTokenLink);
 
 			var from = new EmailAddress(this.FromEmail);
 			var to = new EmailAddress(identityEntity.EmailAddress);
@@ -92,15 +88,13 @@ namespace DiyAuth.EmailProviders
 		{
 			var identityEntity = await this.AuthenticationProvider.GetIdentityById(identityId).ConfigureAwait(false);
 
-			// TODO: 
-			// Generate verification token
-			var verificationToken = "";
-			var verificationTokenLink = "";
+			var verificationToken = await this.AuthenticationProvider.GenerateVerificationToken(identityEntity.IdentityId);
+			var verificationTokenLink = this.TwoFactorAuthenticationRedirectUri.AbsoluteUri.Trim('/') + "/" + verificationToken;
 
 			var content = this.TwoFactorAuthenticationEmailTemplate;
 			content = content.Replace("##__Subject__##", subject);
 			content = content.Replace("##__CompanyName__##", this.CompanyName);
-			content = content.Replace("##__VerificationTokenLink__#", verificationTokenLink);
+			content = content.Replace("##__VerificationTokenLink__##", verificationTokenLink);
 
 			var from = new EmailAddress(this.FromEmail);
 			var to = new EmailAddress(identityEntity.EmailAddress);

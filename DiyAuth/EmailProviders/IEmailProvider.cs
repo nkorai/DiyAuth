@@ -11,6 +11,10 @@ namespace DiyAuth.EmailProviders
 	{
 		IAuthenticationProvider AuthenticationProvider { get; set; }
 
+		Uri VerificationTokenRedirectUri { get; set; }
+		Uri ForgotPasswordRedirectUri { get; set; }
+		Uri TwoFactorAuthenticationRedirectUri { get; set; }
+
 		string VerificationTokenEmailTemplate { get; set; }
 		string ForgotPasswordEmailTemplate { get; set; }
 		string TwoFactorAuthenticationEmailTemplate { get; set; }
