@@ -9,6 +9,7 @@ using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
 using DiyAuth.AuthenticationEntities.AWS;
+using DiyAuth.EmailProviders;
 using DiyAuth.Models;
 using DiyAuth.Utility;
 using Newtonsoft.Json;
@@ -17,6 +18,10 @@ namespace DiyAuth.AuthenticationProviders
 {
 	public class AWSDynamoDbAuthenticationProvider : IAuthenticationProvider
 	{
+		// Interface properties
+		public IEmailProvider EmailProvider { get; set; }
+
+		// AWS specific properties
 		public string AwsAccessKeyId { get; set; }
 		public string AwsSecretAccessKey { get; set; }
 

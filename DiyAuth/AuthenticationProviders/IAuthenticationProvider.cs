@@ -1,4 +1,5 @@
-﻿using DiyAuth.Models;
+﻿using DiyAuth.EmailProviders;
+using DiyAuth.Models;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -9,6 +10,8 @@ namespace DiyAuth.AuthenticationProviders
 {
 	public interface IAuthenticationProvider
 	{
+		IEmailProvider EmailProvider { get; set; }
+
 		Task<bool> CheckIdentityExists(string emailAddress, CancellationToken cancellationToken = default(CancellationToken));
 		Task<CreateIdentityResult> CreateIdentity(string emailAddress, string password, CancellationToken cancellationToken = default(CancellationToken));
 		Task<AuthorizeResult> Authorize(string emailAddress, string password, CancellationToken cancellationToken = default(CancellationToken));

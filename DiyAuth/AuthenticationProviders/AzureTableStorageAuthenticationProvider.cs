@@ -1,5 +1,6 @@
 ﻿using DiyAuth.AuthenticationEntities;
 using DiyAuth.AuthenticationEntities.Azure;
+using DiyAuth.EmailProviders;
 using DiyAuth.Models;
 using DiyAuth.Utility;
 using Microsoft.WindowsAzure.Storage;
@@ -14,6 +15,10 @@ namespace DiyAuth.AuthenticationProviders
 {
 	public class AzureTableStorageAuthenticationProvider : IAuthenticationProvider
 	{
+		// Interface properties
+		public IEmailProvider EmailProvider { get; set; }
+
+		// Azure specific properties
 		public string ConnectionString { get; set; }
 		public string IdentityTableName { get; set; } = Constants.TableNames.IdentityTable;
 		public string TokenTableName { get; set; } = Constants.TableNames.TokenTable;
