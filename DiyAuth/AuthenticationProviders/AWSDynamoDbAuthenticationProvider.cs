@@ -465,5 +465,11 @@ namespace DiyAuth.AuthenticationProviders
 				IdentityId = identityId
 			};
 		}
+
+		public void SetEmailProvider(IEmailProvider emailProvider)
+		{
+			this.EmailProvider = emailProvider;
+			emailProvider.AuthenticationProvider = this;
+		}
 	}
 }

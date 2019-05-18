@@ -341,5 +341,11 @@ namespace DiyAuth.AuthenticationProviders
 			var entityDeleteResult = await this.IdentityTable.ExecuteAsync(deleteEntityOperation, null, null, cancellationToken).ConfigureAwait(false);
 			var foreignKeyDeleteResult = await this.IdentityTable.ExecuteAsync(deleteForeignKeyOperation, null, null, cancellationToken).ConfigureAwait(false);
 		}
+
+		public void SetEmailProvider(IEmailProvider emailProvider)
+		{
+			this.EmailProvider = emailProvider;
+			emailProvider.AuthenticationProvider = this;
+		}
 	}
 }

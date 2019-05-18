@@ -1,4 +1,5 @@
-﻿using System;
+﻿using DiyAuth.AuthenticationProviders;
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -8,6 +9,8 @@ namespace DiyAuth.EmailProviders
 {
 	public interface IEmailProvider
 	{
+		IAuthenticationProvider AuthenticationProvider { get; set; }
+
 		string VerificationTokenEmailTemplate { get; set; }
 		string ForgotPasswordEmailTemplate { get; set; }
 		string TwoFactorAuthenticationEmailTemplate { get; set; }
