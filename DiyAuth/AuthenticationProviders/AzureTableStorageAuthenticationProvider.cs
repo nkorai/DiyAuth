@@ -342,14 +342,30 @@ namespace DiyAuth.AuthenticationProviders
 			var foreignKeyDeleteResult = await this.IdentityTable.ExecuteAsync(deleteForeignKeyOperation, null, null, cancellationToken).ConfigureAwait(false);
 		}
 
-		public Task<IIdentityEntity> GetIdentityById(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
+		public async Task<IIdentityEntity> GetIdentityById(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			throw new NotImplementedException();
+			var retrieveOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, identityId.ToString());
+			var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation, null, null, cancellationToken).ConfigureAwait(false);
+			var retrievedEntity = (AzureIdentityEntity)retrievedResult.Result;
+			return retrievedEntity;
 		}
 
-		public Task<IIdentityEntity> GetIdentityByEmail(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
+		public async Task<IIdentityEntity> GetIdentityByEmail(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			throw new NotImplementedException();
+			// Check to see if email exists
+			var retrieveOperation = TableOperation.Retrieve<AzureIdentityForeignKeyEntity>(Constants.PartitionNames.IdentityForeignKey, emailAddress);
+			var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation, null, null, cancellationToken).ConfigureAwait(false);
+			var retrievedEntity = (AzureIdentityForeignKeyEntity)retrievedResult?.Result;
+			if (retrievedEntity == null)
+			{
+				throw new KeyNotFoundException($"The EmailAddress '{emailAddress}' was not found");
+			}
+
+			// Retrieve IdentityEntity
+			var retrieveIdentityOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, retrievedEntity.IdentityId.ToString());
+			var retrievedIdentityResult = await this.IdentityTable.ExecuteAsync(retrieveIdentityOperation, null, null, cancellationToken).ConfigureAwait(false);
+			var retrievedIdentityEntity = (AzureIdentityEntity)retrievedIdentityResult?.Result;
+			return retrievedIdentityEntity;
 		}
 
 		public void SetEmailProvider(IEmailProvider emailProvider)
