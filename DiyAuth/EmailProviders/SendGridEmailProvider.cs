@@ -41,7 +41,7 @@ namespace DiyAuth.EmailProviders
 			var identityExists = await this.AuthenticationProvider.CheckIdentityExists(emailAddress).ConfigureAwait(false);
 			if (identityExists)
 			{
-				return; //TODO: what to do here;
+				throw new KeyNotFoundException($"The EmailAddress '{emailAddress}' was not found");
 			}
 
 			// TODO: 
