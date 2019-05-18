@@ -467,14 +467,30 @@ namespace DiyAuth.AuthenticationProviders
 			};
 		}
 
-		public Task<IIdentityEntity> GetIdentityById(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
+		public async Task<IIdentityEntity> GetIdentityById(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			throw new NotImplementedException();
+			var identityResult = await this.IdentityTable.GetItemAsync(Constants.PartitionNames.IdentityPrimary, identityId.ToString(), cancellationToken).ConfigureAwait(false);
+			var identityEntity = JsonConvert.DeserializeObject<AWSIdentityEntity>(identityResult.ToJson());
+			return identityEntity;
 		}
 
-		public Task<IIdentityEntity> GetIdentityByEmail(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
+		public async Task<IIdentityEntity> GetIdentityByEmail(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			throw new NotImplementedException();
+			// Check to see if email exists
+			var queryResponse = await QueryEmailSecondaryIndex(emailAddress, cancellationToken).ConfigureAwait(false);
+			if (queryResponse.Count != 1)
+			{
+				throw new KeyNotFoundException($"The EmailAddress '{emailAddress}' was not found");
+			}
+
+			var identitySecondaryResult = queryResponse.Items.First();
+			var identityId = identitySecondaryResult[nameof(AWSIdentityEntity.IdentityId)].S;
+
+			// Retrieve IdentityEntity
+			var identityResult = await this.IdentityTable.GetItemAsync(Constants.PartitionNames.IdentityPrimary, identityId, cancellationToken).ConfigureAwait(false);
+			var identityEntity = JsonConvert.DeserializeObject<AWSIdentityEntity>(identityResult.ToJson());
+
+			return identityEntity;
 		}
 
 		public void SetEmailProvider(IEmailProvider emailProvider)
