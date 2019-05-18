@@ -58,9 +58,12 @@ namespace DiyAuth.EmailProviders
 
 		public async Task SendTwoFactorAuthenticationCodeEmail(Guid identityId, string subject, CancellationToken cancellationToken = default(CancellationToken))
 		{
+			var identityEntity = await this.AuthenticationProvider.GetIdentityById(identityId).ConfigureAwait(false);
+
+
 			var content = this.TwoFactorAuthenticationEmailTemplate;
 			var from = new EmailAddress(this.FromEmail);
-			var to = new EmailAddress(emailAddress);
+			var to = new EmailAddress(identityEntity.EmailAddress);
 			var htmlContent = content;
 			var message = MailHelper.CreateSingleEmail(from, to, subject, null, htmlContent);
 			var response = await this.Client.SendEmailAsync(message, cancellationToken);
@@ -68,9 +71,12 @@ namespace DiyAuth.EmailProviders
 
 		public async Task SendVerificationEmail(Guid identityId, string subject, CancellationToken cancellationToken = default(CancellationToken))
 		{
+			var identityEntity = await this.AuthenticationProvider.GetIdentityById(identityId).ConfigureAwait(false);
+
+
 			var content = this.VerificationTokenEmailTemplate;
 			var from = new EmailAddress(this.FromEmail);
-			var to = new EmailAddress(emailAddress);
+			var to = new EmailAddress(identityEntity.EmailAddress);
 			var htmlContent = content;
 			var message = MailHelper.CreateSingleEmail(from, to, subject, null, htmlContent);
 			var response = await this.Client.SendEmailAsync(message, cancellationToken);

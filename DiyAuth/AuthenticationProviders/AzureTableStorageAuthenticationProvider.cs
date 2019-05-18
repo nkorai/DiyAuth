@@ -342,6 +342,16 @@ namespace DiyAuth.AuthenticationProviders
 			var foreignKeyDeleteResult = await this.IdentityTable.ExecuteAsync(deleteForeignKeyOperation, null, null, cancellationToken).ConfigureAwait(false);
 		}
 
+		public Task<IIdentityEntity> GetIdentityById(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<IIdentityEntity> GetIdentityByEmail(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			throw new NotImplementedException();
+		}
+
 		public void SetEmailProvider(IEmailProvider emailProvider)
 		{
 			this.EmailProvider = emailProvider;

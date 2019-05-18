@@ -8,6 +8,7 @@ using Amazon;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
+using DiyAuth.AuthenticationEntities;
 using DiyAuth.AuthenticationEntities.AWS;
 using DiyAuth.EmailProviders;
 using DiyAuth.Models;
@@ -464,6 +465,16 @@ namespace DiyAuth.AuthenticationProviders
 				Token = token,
 				IdentityId = identityId
 			};
+		}
+
+		public Task<IIdentityEntity> GetIdentityById(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			throw new NotImplementedException();
+		}
+
+		public Task<IIdentityEntity> GetIdentityByEmail(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			throw new NotImplementedException();
 		}
 
 		public void SetEmailProvider(IEmailProvider emailProvider)
