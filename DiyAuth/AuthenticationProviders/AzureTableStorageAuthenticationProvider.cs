@@ -407,6 +407,25 @@ namespace DiyAuth.AuthenticationProviders
 			var retrieveIdentityOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, retrievedEntity.IdentityId.ToString());
 			var retrievedIdentityResult = await this.IdentityTable.ExecuteAsync(retrieveIdentityOperation, null, null, cancellationToken).ConfigureAwait(false);
 			var retrievedIdentityEntity = (AzureIdentityEntity)retrievedIdentityResult?.Result;
+
+			if (!deleteTokenOnRetrieval)
+			{
+				return retrievedIdentityEntity;
+			}
+
+
+			// Delete the verification token record
+			var deleteVerificationEntity = new AzureVerificationTokenEntity
+			{
+				PartitionKey = Constants.PartitionNames.IdentityPrimary,
+				RowKey = retrievedEntity.VerificationToken.ToString(),
+				ETag = "*"
+			};
+
+			// Delete identity and identity foreign key 
+			var deleteEntityOperation = TableOperation.Delete(deleteVerificationEntity);
+			var entityDeleteResult = await this.IdentityTable.ExecuteAsync(deleteEntityOperation, null, null, cancellationToken).ConfigureAwait(false);
+
 			return retrievedIdentityEntity;
 		}
 	}
