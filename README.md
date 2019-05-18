@@ -11,7 +11,7 @@ Everytime I want to start a new side project I invariably have to rebuild the ab
 - The service can shut down (Like Parse did) leaving you without a way to authenticate
 - It can be a bottleneck in your system that you can't control
 
-It's a decent time sync everytime I have to build it and I'd rather just get to building the meat and potatoes of the idea than building the authentication mechanism everytime. I feel like other developers have the same issue so I decided to build this into an open source library that implements the most common functionality as far as user authentication and authorization goes. 
+It's a decent time sink everytime I have to build it and I'd rather just get to building the meat and potatoes of the idea than building the authentication mechanism everytime. I feel like other developers have the same issue so I decided to build this into an open source library that implements the most common functionality as far as user authentication and authorization goes. 
 
 ## Things that you must handle
 DiyAuth can handle a lot of the background encrypting and management for you but you must make sure the following things are taken care of:
