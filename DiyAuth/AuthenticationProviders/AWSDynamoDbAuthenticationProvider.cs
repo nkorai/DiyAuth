@@ -545,7 +545,7 @@ namespace DiyAuth.AuthenticationProviders
 			throw new NotImplementedException();
 		}
 
-		public Task<bool> CheckVerificationToken(string verificationToken, CancellationToken cancellationToken = default(CancellationToken))
+		public Task<IIdentityEntity> VerifyVerificationToken(string verificationToken, bool deleteTokenOnRetrieval = true, CancellationToken cancellationToken = default(CancellationToken))
 		{
 			throw new NotImplementedException();
 		}

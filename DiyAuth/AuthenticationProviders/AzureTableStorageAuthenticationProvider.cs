@@ -378,14 +378,36 @@ namespace DiyAuth.AuthenticationProviders
 			return retrievedIdentityEntity;
 		}
 
-		public Task<string> GenerateVerificationToken(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
+		public async Task<string> GenerateVerificationToken(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			throw new NotImplementedException();
+			var verificationToken = Security.GenerateToken();
+			var verificationTokenEntity = new AzureVerificationTokenEntity
+			{
+				VerificationToken = verificationToken,
+				IdentityId = identityId
+			};
+
+			var createOperation = TableOperation.Insert(verificationTokenEntity);
+			var result = await this.TokenTable.ExecuteAsync(createOperation, null, null, cancellationToken).ConfigureAwait(false);
+			return verificationToken;
 		}
 
-		public Task<bool> CheckVerificationToken(string verificationToken, CancellationToken cancellationToken = default(CancellationToken))
+		public async Task<IIdentityEntity> VerifyVerificationToken(string verificationToken, bool deleteTokenOnRetrieval = true, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			throw new NotImplementedException();
+			// Check to see if VerificationToken exists
+			var retrieveOperation = TableOperation.Retrieve<AzureVerificationTokenEntity>(Constants.PartitionNames.VerificationTokenPrimary, verificationToken);
+			var retrievedResult = await this.VerificationTokenTable.ExecuteAsync(retrieveOperation, null, null, cancellationToken).ConfigureAwait(false);
+			var retrievedEntity = (AzureVerificationTokenEntity)retrievedResult?.Result;
+			if (retrievedEntity == null)
+			{
+				throw new KeyNotFoundException($"The VerificationToken '{verificationToken}' was not found");
+			}
+
+			// Retrieve IdentityEntity
+			var retrieveIdentityOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, retrievedEntity.IdentityId.ToString());
+			var retrievedIdentityResult = await this.IdentityTable.ExecuteAsync(retrieveIdentityOperation, null, null, cancellationToken).ConfigureAwait(false);
+			var retrievedIdentityEntity = (AzureIdentityEntity)retrievedIdentityResult?.Result;
+			return retrievedIdentityEntity;
 		}
 	}
 }
