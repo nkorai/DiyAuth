@@ -53,7 +53,7 @@ namespace DiyAuth.AuthenticationProviders
 
 			await this.IdentityTable.CreateIfNotExistsAsync(null, null, cancellationToken).ConfigureAwait(false);
 			await this.TokenTable.CreateIfNotExistsAsync(null, null, cancellationToken).ConfigureAwait(false);
-			await this.TokenTable.CreateIfNotExistsAsync(null, null, cancellationToken).ConfigureAwait(false);
+			await this.VerificationTokenTable.CreateIfNotExistsAsync(null, null, cancellationToken).ConfigureAwait(false);
 		}
 
 		public void SetEmailProvider(IEmailProvider emailProvider)

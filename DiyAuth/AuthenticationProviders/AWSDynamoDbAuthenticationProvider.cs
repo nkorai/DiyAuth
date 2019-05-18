@@ -240,6 +240,7 @@ namespace DiyAuth.AuthenticationProviders
 
 			this.IdentityTable = Table.LoadTable(this.DynamoDbClient, IdentityTableName);
 			this.TokenTable = Table.LoadTable(this.DynamoDbClient, TokenTableName);
+			this.VerificationTokenTable = Table.LoadTable(this.DynamoDbClient, VerificationTokenTableName);
 		}
 
 		private async Task<TableStatus> GetTableStatus(string tableName, CancellationToken cancellationToken)
