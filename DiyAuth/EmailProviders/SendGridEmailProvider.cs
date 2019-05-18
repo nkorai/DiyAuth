@@ -1,4 +1,5 @@
 ﻿using DiyAuth.AuthenticationProviders;
+using DiyAuth.Properties;
 using SendGrid;
 using SendGrid.Helpers.Mail;
 using System;
@@ -21,18 +22,23 @@ namespace DiyAuth.EmailProviders
 		// SendGrid specific properties
 		public string ApiKey { get; set; }
 		public string FromEmail { get; set; }
+		public string CompanyName { get; set; }
 		public SendGridClient Client { get; set; }
 
-		public SendGridEmailProvider(string apiKey, string fromEmail)
+		public SendGridEmailProvider(string apiKey, string fromEmail, string companyName)
 		{
 			this.ApiKey = apiKey;
+			this.CompanyName = companyName;
 			this.FromEmail = fromEmail;
 			this.Client = new SendGridClient(apiKey);
+			this.ForgotPasswordEmailTemplate = Resources.ForgotPasswordTemplate;
+			this.VerificationTokenEmailTemplate = Resources.VerificationTokenTemplate;
+			this.TwoFactorAuthenticationEmailTemplate = Resources.TwoFactorTemplate;
 		}
 
-		public static SendGridEmailProvider Create(string apiKey, string fromEmail)
+		public static SendGridEmailProvider Create(string apiKey, string fromEmail, string companyName)
 		{
-			var provider = new SendGridEmailProvider(apiKey, fromEmail);
+			var provider = new SendGridEmailProvider(apiKey, fromEmail, companyName);
 			return provider;
 		}
 
@@ -46,24 +52,16 @@ namespace DiyAuth.EmailProviders
 
 			// TODO: 
 			// Generate verification token
-			// Replace template token with generated token
+			var verificationToken = "";
+			var verificationTokenLink = "";
 
 			var content = this.ForgotPasswordEmailTemplate;
+			content = content.Replace("##__Subject__##", subject);
+			content = content.Replace("##__CompanyName__##", this.CompanyName);
+			content = content.Replace("##__VerificationTokenLink__#", verificationTokenLink);
+
 			var from = new EmailAddress(this.FromEmail);
 			var to = new EmailAddress(emailAddress);
-			var htmlContent = content;
-			var message = MailHelper.CreateSingleEmail(from, to, subject, null, htmlContent);
-			var response = await this.Client.SendEmailAsync(message, cancellationToken);
-		}
-
-		public async Task SendTwoFactorAuthenticationCodeEmail(Guid identityId, string subject, CancellationToken cancellationToken = default(CancellationToken))
-		{
-			var identityEntity = await this.AuthenticationProvider.GetIdentityById(identityId).ConfigureAwait(false);
-
-
-			var content = this.TwoFactorAuthenticationEmailTemplate;
-			var from = new EmailAddress(this.FromEmail);
-			var to = new EmailAddress(identityEntity.EmailAddress);
 			var htmlContent = content;
 			var message = MailHelper.CreateSingleEmail(from, to, subject, null, htmlContent);
 			var response = await this.Client.SendEmailAsync(message, cancellationToken);
@@ -73,8 +71,37 @@ namespace DiyAuth.EmailProviders
 		{
 			var identityEntity = await this.AuthenticationProvider.GetIdentityById(identityId).ConfigureAwait(false);
 
+			// TODO: 
+			// Generate verification token
+			var verificationToken = "";
+			var verificationTokenLink = "";
 
 			var content = this.VerificationTokenEmailTemplate;
+			content = content.Replace("##__Subject__##", subject);
+			content = content.Replace("##__CompanyName__##", this.CompanyName);
+			content = content.Replace("##__VerificationTokenLink__#", verificationTokenLink);
+
+			var from = new EmailAddress(this.FromEmail);
+			var to = new EmailAddress(identityEntity.EmailAddress);
+			var htmlContent = content;
+			var message = MailHelper.CreateSingleEmail(from, to, subject, null, htmlContent);
+			var response = await this.Client.SendEmailAsync(message, cancellationToken);
+		}
+
+		public async Task SendTwoFactorAuthenticationCodeEmail(Guid identityId, string subject, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			var identityEntity = await this.AuthenticationProvider.GetIdentityById(identityId).ConfigureAwait(false);
+
+			// TODO: 
+			// Generate verification token
+			var verificationToken = "";
+			var verificationTokenLink = "";
+
+			var content = this.TwoFactorAuthenticationEmailTemplate;
+			content = content.Replace("##__Subject__##", subject);
+			content = content.Replace("##__CompanyName__##", this.CompanyName);
+			content = content.Replace("##__VerificationTokenLink__#", verificationTokenLink);
+
 			var from = new EmailAddress(this.FromEmail);
 			var to = new EmailAddress(identityEntity.EmailAddress);
 			var htmlContent = content;
