@@ -30,9 +30,11 @@ namespace DiyAuth.AuthenticationProviders
 
 		public string IdentityTableName { get; set; } = Constants.TableNames.IdentityTable;
 		public string TokenTableName { get; set; } = Constants.TableNames.TokenTable;
+		public string VerificationTokenTableName { get; set; } = Constants.TableNames.VerificationTokenTable;
 
 		public Table IdentityTable { get; set; }
 		public Table TokenTable { get; set; }
+		public Table VerificationTokenTable { get; set; }
 
 		public IAmazonDynamoDB DynamoDbClient { get; private set; }
 
@@ -53,7 +55,7 @@ namespace DiyAuth.AuthenticationProviders
 		public async Task Initialize(CancellationToken cancellationToken = default(CancellationToken))
 		{
 			var tablesAdded = false;
-			var allTables = new List<string>() { this.IdentityTableName, this.TokenTableName };
+			var allTables = new List<string>() { this.IdentityTableName, this.TokenTableName, this.VerificationTokenTableName };
 
 			this.DynamoDbClient = new AmazonDynamoDBClient(this.AwsAccessKeyId, this.AwsSecretAccessKey, this.RegionEndpoint);
 			var tableResponse = await this.DynamoDbClient.ListTablesAsync(cancellationToken).ConfigureAwait(false);
@@ -104,7 +106,7 @@ namespace DiyAuth.AuthenticationProviders
 					GlobalSecondaryIndexes = new List<GlobalSecondaryIndex>{
 						new GlobalSecondaryIndex
 						{
-							IndexName = Constants.PartitionNames.IdentityForeignKey,
+							IndexName = Constants.PartitionNames.EmailAddressToIdentityForeignKey,
 							ProvisionedThroughput = new ProvisionedThroughput
 							{
 								ReadCapacityUnits = 10,
@@ -174,6 +176,44 @@ namespace DiyAuth.AuthenticationProviders
 				tablesAdded = true;
 			}
 
+			if (!currentTables.Contains(this.VerificationTokenTableName))
+			{
+				var tableRequest = new CreateTableRequest
+				{
+					TableName = this.VerificationTokenTableName,
+					ProvisionedThroughput = new ProvisionedThroughput { ReadCapacityUnits = 10, WriteCapacityUnits = 10 },
+					KeySchema = new List<KeySchemaElement>
+					{
+						new KeySchemaElement
+						{
+							AttributeName = nameof(AWSVerificationTokenEntity.PartitionKey),
+							KeyType = KeyType.HASH
+						},
+						new KeySchemaElement
+						{
+							AttributeName = nameof(AWSVerificationTokenEntity.VerificationToken),
+							KeyType = KeyType.RANGE
+						},
+					},
+					AttributeDefinitions = new List<AttributeDefinition>
+					{
+						new AttributeDefinition
+						{
+							AttributeName =  nameof(AWSVerificationTokenEntity.PartitionKey),
+							AttributeType = ScalarAttributeType.S
+						},
+						new AttributeDefinition
+						{
+							AttributeName =  nameof(AWSVerificationTokenEntity.VerificationToken),
+							AttributeType = ScalarAttributeType.S
+						}
+					}
+				};
+
+				await this.DynamoDbClient.CreateTableAsync(tableRequest, cancellationToken).ConfigureAwait(false);
+				tablesAdded = true;
+			}
+
 			if (tablesAdded)
 			{
 				while (true)
@@ -214,6 +254,12 @@ namespace DiyAuth.AuthenticationProviders
 			{
 				return string.Empty;
 			}
+		}
+
+		public void SetEmailProvider(IEmailProvider emailProvider)
+		{
+			this.EmailProvider = emailProvider;
+			emailProvider.AuthenticationProvider = this;
 		}
 
 		public async Task<AuthenticateResult> Authenticate(string token, CancellationToken cancellationToken = default(CancellationToken))
@@ -348,11 +394,11 @@ namespace DiyAuth.AuthenticationProviders
 			var queryRequest = new QueryRequest
 			{
 				TableName = this.IdentityTableName,
-				IndexName = Constants.PartitionNames.IdentityForeignKey,
+				IndexName = Constants.PartitionNames.EmailAddressToIdentityForeignKey,
 				KeyConditionExpression = $"SecondaryPartitionKey = {partitionKeyDescriptor} and EmailAddress = {emailDescriptor}",
 				ExpressionAttributeValues = new Dictionary<string, AttributeValue>
 				{
-					[partitionKeyDescriptor] = new AttributeValue { S = Constants.PartitionNames.IdentityForeignKey },
+					[partitionKeyDescriptor] = new AttributeValue { S = Constants.PartitionNames.EmailAddressToIdentityForeignKey },
 					[emailDescriptor] = new AttributeValue { S = emailAddress }
 				},
 				ScanIndexForward = true
@@ -493,10 +539,14 @@ namespace DiyAuth.AuthenticationProviders
 			return identityEntity;
 		}
 
-		public void SetEmailProvider(IEmailProvider emailProvider)
+		public Task<string> GenerateVerificationToken(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			this.EmailProvider = emailProvider;
-			emailProvider.AuthenticationProvider = this;
+			throw new NotImplementedException();
+		}
+
+		public Task<bool> CheckVerificationToken(string verificationToken, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			throw new NotImplementedException();
 		}
 	}
 }

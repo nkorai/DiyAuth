@@ -6,9 +6,9 @@ using System.Text;
 
 namespace DiyAuth.AuthenticationEntities.Azure
 {
-	public class AzureIdentityForeignKeyEntity : TableEntity
+	public class AzureVerificationTokenEntity : TableEntity, IVerificationToken
 	{
-		public string EmailAddress
+		public string VerificationToken
 		{
 			get
 			{
@@ -22,9 +22,9 @@ namespace DiyAuth.AuthenticationEntities.Azure
 
 		public Guid IdentityId { get; set; }
 
-		public AzureIdentityForeignKeyEntity()
+		public AzureVerificationTokenEntity()
 		{
-			this.PartitionKey = Constants.PartitionNames.EmailAddressToIdentityForeignKey;
+			this.PartitionKey = Constants.PartitionNames.VerificationTokenPrimary;
 		}
 	}
 }
