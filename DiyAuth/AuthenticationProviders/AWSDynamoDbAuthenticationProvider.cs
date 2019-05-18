@@ -540,14 +540,36 @@ namespace DiyAuth.AuthenticationProviders
 			return identityEntity;
 		}
 
-		public Task<string> GenerateVerificationToken(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
+		public async Task<string> GenerateVerificationToken(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			throw new NotImplementedException();
+			var verificationToken = Security.GenerateToken();
+			var verificationTokenEntity = new AWSVerificationTokenEntity
+			{
+				VerificationToken = verificationToken,
+				IdentityId = identityId
+			};
+
+			var verificationTokenDocument = Document.FromJson(JsonConvert.SerializeObject(verificationTokenEntity));
+			var insertTokenResponse = await this.VerificationTokenTable.PutItemAsync(verificationTokenDocument, cancellationToken).ConfigureAwait(false);
+			return verificationToken;
 		}
 
-		public Task<IIdentityEntity> VerifyVerificationToken(string verificationToken, bool deleteTokenOnRetrieval = true, CancellationToken cancellationToken = default(CancellationToken))
+		public async Task<IIdentityEntity> VerifyVerificationToken(string verificationToken, bool deleteTokenOnRetrieval = true, CancellationToken cancellationToken = default(CancellationToken))
 		{
-			throw new NotImplementedException();
+			// Check to see if VerificationToken exists
+			var verificationTokenResult = await this.VerificationTokenTable.GetItemAsync(Constants.PartitionNames.VerificationTokenPrimary, verificationToken, cancellationToken).ConfigureAwait(false);
+			var verificationTokenEntity = JsonConvert.DeserializeObject<AWSVerificationTokenEntity>(verificationTokenResult.ToJson());
+
+			// Retrieve IdentityEntity
+			var identity = await GetIdentityById(verificationTokenEntity.IdentityId, cancellationToken).ConfigureAwait(false);
+			if (!deleteTokenOnRetrieval)
+			{
+				return identity;
+			}
+
+			// Delete the verification token record
+			var deleteResult = await this.VerificationTokenTable.DeleteItemAsync(Constants.PartitionNames.VerificationTokenPrimary, verificationToken, cancellationToken).ConfigureAwait(false);
+			return identity;
 		}
 	}
 }
