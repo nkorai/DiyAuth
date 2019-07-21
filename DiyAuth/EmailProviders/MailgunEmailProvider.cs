@@ -30,6 +30,7 @@ namespace DiyAuth.EmailProviders
 
 		// SendGrid specific properties
 		public string ApiKey { get; set; }
+		public string BaseUrl { get; set; } = "https://api.mailgun.net/v3";
 		public string DomainUrl { get; set; }
 		public string FromEmail { get; set; }
 		public string CompanyName { get; set; }
@@ -40,7 +41,6 @@ namespace DiyAuth.EmailProviders
 			this.ApiKey = apiKey;
 			this.CompanyName = companyName;
 			this.FromEmail = fromEmail;
-			this.Client = new MailgunClient(domainUrl, apiKey);
 
 			this.VerificationEmailSubject = verificationEmailSubject;
 			this.ForgotPasswordEmailSubject = forgotPasswordEmailSubject;
@@ -73,11 +73,7 @@ namespace DiyAuth.EmailProviders
 			content = content.Replace("##__CompanyName__##", this.CompanyName);
 			content = content.Replace("##__VerificationTokenLink__##", verificationTokenLink);
 
-			var from = new EmailAddress(this.FromEmail);
-			var to = new EmailAddress(emailAddress);
-			var htmlContent = content;
-			var message = MailHelper.CreateSingleEmail(from, to, subject, null, htmlContent);
-			var response = await this.Client.SendEmailAsync(message, cancellationToken);
+			await this.Client.SendEmail(this.FromEmail, emailAddress, subject, content, cancellationToken);
 		}
 
 		public async Task SendVerificationEmail(Guid identityId, string subject, CancellationToken cancellationToken = default(CancellationToken))
@@ -92,11 +88,7 @@ namespace DiyAuth.EmailProviders
 			content = content.Replace("##__CompanyName__##", this.CompanyName);
 			content = content.Replace("##__VerificationTokenLink__##", verificationTokenLink);
 
-			var from = new EmailAddress(this.FromEmail);
-			var to = new EmailAddress(identityEntity.EmailAddress);
-			var htmlContent = content;
-			var message = MailHelper.CreateSingleEmail(from, to, subject, null, htmlContent);
-			var response = await this.Client.SendEmailAsync(message, cancellationToken);
+			await this.Client.SendEmail(this.FromEmail, identityEntity.EmailAddress, subject, content, cancellationToken);
 		}
 
 		public async Task SendTwoFactorAuthenticationCodeEmail(Guid identityId, string subject, CancellationToken cancellationToken = default(CancellationToken))
@@ -111,11 +103,7 @@ namespace DiyAuth.EmailProviders
 			content = content.Replace("##__CompanyName__##", this.CompanyName);
 			content = content.Replace("##__VerificationTokenLink__##", verificationTokenLink);
 
-			var from = new EmailAddress(this.FromEmail);
-			var to = new EmailAddress(identityEntity.EmailAddress);
-			var htmlContent = content;
-			var message = MailHelper.CreateSingleEmail(from, to, subject, null, htmlContent);
-			var response = await this.Client.SendEmailAsync(message, cancellationToken);
+			await this.Client.SendEmail(this.FromEmail, identityEntity.EmailAddress, subject, content, cancellationToken);
 		}
 	}
 }
