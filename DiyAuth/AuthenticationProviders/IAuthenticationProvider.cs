@@ -13,6 +13,7 @@ namespace DiyAuth.AuthenticationProviders
 	{
 		IEmailProvider EmailProvider { get; set; }
 		void SetEmailProvider(IEmailProvider emailProvider);
+		bool AllowUnverifiedIdentities { get; set; }
 
 		Task<bool> CheckIdentityExists(string emailAddress, CancellationToken cancellationToken = default(CancellationToken));
 		Task<IIdentityEntity> GetIdentityById(Guid identityId, CancellationToken cancellationToken = default(CancellationToken));

@@ -17,6 +17,7 @@ namespace DiyAuth.AuthenticationProviders
 	{
 		// Interface properties
 		public IEmailProvider EmailProvider { get; set; }
+		public bool AllowUnverifiedIdentities { get; set; }
 
 		// Azure specific properties
 		public string ConnectionString { get; set; }
@@ -69,6 +70,7 @@ namespace DiyAuth.AuthenticationProviders
 				var retrieveOperation = TableOperation.Retrieve<AzureTokenEntity>(Constants.PartitionNames.TokenPrimary, token);
 				var retrievedResult = await this.TokenTable.ExecuteAsync(retrieveOperation, null, null, cancellationToken).ConfigureAwait(false);
 				var retrievedEntity = (AzureTokenEntity)retrievedResult?.Result;
+				
 				return new AuthenticateResult
 				{
 					Success = true,
@@ -104,6 +106,16 @@ namespace DiyAuth.AuthenticationProviders
 				var retrieveIdentityOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, retrievedEntity.IdentityId.ToString());
 				var retrievedIdentityResult = await this.IdentityTable.ExecuteAsync(retrieveIdentityOperation, null, null, cancellationToken).ConfigureAwait(false);
 				var retrievedIdentityEntity = (AzureIdentityEntity)retrievedIdentityResult?.Result;
+
+				if (this.EmailProvider != null && !retrievedIdentityEntity.EmailVerified && !this.AllowUnverifiedIdentities)
+				{
+					return new AuthorizeResult
+					{
+						Success = false,
+						IdentityId = retrievedEntity.IdentityId,
+						Message = "Identity has not been verified by email yet"
+					};
+				}
 
 				// Check if provided password is valid
 				var passwordMatches = Security.PasswordMatches(retrievedIdentityEntity.PerUserSalt, password, retrievedIdentityEntity.HashedPassword);

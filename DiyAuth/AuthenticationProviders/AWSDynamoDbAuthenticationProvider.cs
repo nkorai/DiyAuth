@@ -21,6 +21,7 @@ namespace DiyAuth.AuthenticationProviders
 	{
 		// Interface properties
 		public IEmailProvider EmailProvider { get; set; }
+		public bool AllowUnverifiedIdentities { get; set; }
 
 		// AWS specific properties
 		public string AwsAccessKeyId { get; set; }
@@ -312,6 +313,17 @@ namespace DiyAuth.AuthenticationProviders
 					return new AuthorizeResult
 					{
 						Success = false
+					};
+				}
+
+				// Email verification check
+				if (this.EmailProvider != null && !identityEntity.EmailVerified && !this.AllowUnverifiedIdentities)
+				{
+					return new AuthorizeResult
+					{
+						Success = false,
+						IdentityId = identityEntity.IdentityId,
+						Message = "Identity has not been verified by email yet"
 					};
 				}
 
