@@ -10,5 +10,6 @@ namespace DiyAuth.AuthenticationEntities
 		string EmailAddress { get; set; }
 		string HashedPassword { get; set; }
 		string PerUserSalt { get; set; }
+		bool EmailVerified { get; set; }
 	}
 }

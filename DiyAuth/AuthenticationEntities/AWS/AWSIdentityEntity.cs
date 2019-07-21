@@ -14,5 +14,6 @@ namespace DiyAuth.AuthenticationEntities.AWS
 		public string EmailAddress { get; set; }
 		public string HashedPassword { get; set; }
 		public string PerUserSalt { get; set; }
+		public bool EmailVerified { get; set; }
 	}
 }

@@ -21,6 +21,8 @@ namespace DiyAuth.AuthenticationEntities.Azure
 		public string EmailAddress { get; set; }
 		public string HashedPassword { get; set; }
 		public string PerUserSalt { get; set; }
+		public bool EmailVerified { get; set; }
+
 
 		public AzureIdentityEntity()
 		{
