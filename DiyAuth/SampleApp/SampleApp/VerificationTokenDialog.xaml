@@ -6,7 +6,7 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
-    Title="Enter verification token (from email)"
+    Title="Enter verification token"
     PrimaryButtonText="Verify"
     SecondaryButtonText="Cancel"
     PrimaryButtonClick="VerifyButtonClick"
@@ -14,6 +14,8 @@
 
 	<Grid>
 		<StackPanel>
+			<TextBlock TextWrapping="Wrap">An email with your verification link was sent to you. Clicking the link will redirect you to a webpage, copy the verification token from the URL and paste it in here. 
+				For a real world application you'll be redirected to your own page and you can retrieve the token in code and do this process automatically, this convoluted workflow is just for demo purposes.</TextBlock>
 			<TextBox x:Name="VerificationTokenTextBox"></TextBox>
 		</StackPanel>
 	</Grid>

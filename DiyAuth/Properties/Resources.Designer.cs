@@ -114,20 +114,23 @@ namespace DiyAuth.Properties {
         ///   Looks up a localized string similar to &lt;!doctype html&gt;
         ///&lt;html&gt;
         ///  &lt;head&gt;
-        ///    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width&quot;&gt;
-        ///    &lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
-        ///    &lt;title&gt;##__Subject__##&lt;/title&gt;
-        ///    &lt;style&gt;
+        ///	&lt;meta name=&quot;viewport&quot; content=&quot;width=device-width&quot;&gt;
+        ///	&lt;meta http-equiv=&quot;Content-Type&quot; content=&quot;text/html; charset=UTF-8&quot;&gt;
+        ///	&lt;title&gt;##__Subject__##&lt;/title&gt;
+        ///	&lt;style&gt;
         ///
-        ///    @media only screen and (max-width: 620px) {
-        ///      table[class=body] h1 {
-        ///        font-size: 28px !important;
-        ///        margin-bottom: 10px !important;
-        ///      }
-        ///      table[class=body] p,
-        ///            table[class=body] ul,
-        ///            table[class=body] ol,
-        ///            table[class=body] td [rest of string was truncated]&quot;;.
+        ///	@media only screen and (max-width: 620px) {
+        ///	  table[class=body] h1 {
+        ///		font-size: 28px !important;
+        ///		margin-bottom: 10px !important;
+        ///	  }
+        ///	  table[class=body] p,
+        ///			table[class=body] ul,
+        ///			table[class=body] ol,
+        ///			table[class=body] td,
+        ///			table[class=body] span,
+        ///			table[class=body] a {
+        ///		font [rest of string was truncated]&quot;;.
         /// </summary>
         internal static string VerificationTokenTemplate {
             get {

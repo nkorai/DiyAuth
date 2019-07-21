@@ -25,7 +25,7 @@ namespace SampleApp
 			this.InitializeComponent();
 		}
 
-		private async void VerifyButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
+		private void VerifyButtonClick(ContentDialog sender, ContentDialogButtonClickEventArgs args)
 		{
 			VerificationToken = VerificationTokenTextBox.Text;
 		}
