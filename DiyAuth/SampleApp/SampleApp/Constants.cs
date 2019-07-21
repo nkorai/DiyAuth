@@ -26,6 +26,7 @@ namespace SampleApp
 			public const string AwsSecretAccessKey = "AwsSecretAccessKey";
 			public const string AwsAccessKeyId = "AwsAccessKeyId";
 			public const string AwsRegion = "AwsRegion";
+			public const string SendGridApiKey = "SendGridApiKey";
 		}
 	}
 }

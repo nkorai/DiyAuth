@@ -64,7 +64,14 @@ namespace SampleApp
 					var result = await App.Authenticator.CreateIdentity(CreateEmailAddressTextBlock.Text, CreatePasswordBox.Password);
 					if (result.Success)
 					{
-						await AuthenticateAndNavigate(result.Token);
+						if (App.Authenticator.EmailProvider != null)
+						{
+
+						}
+						else
+						{
+							await AuthenticateAndNavigate(result.Token);
+						}
 					}
 					else
 					{

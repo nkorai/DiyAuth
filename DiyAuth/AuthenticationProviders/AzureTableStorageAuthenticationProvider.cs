@@ -186,7 +186,13 @@ namespace DiyAuth.AuthenticationProviders
 				// Create verification token if email provider is set up
 				if (this.EmailProvider != null)
 				{
-					await GenerateVerificationToken(identityEntity.IdentityId, cancellationToken).ConfigureAwait(false);
+					await this.EmailProvider.SendVerificationEmail(identityEntity.IdentityId, this.EmailProvider.VerificationEmailSubject, cancellationToken).ConfigureAwait(false);
+					// Do not create token until identity is verified 
+					return new CreateIdentityResult
+					{
+						Success = true,
+						IdentityId = identityEntity.IdentityId
+					};
 				}
 
 				// Token generation

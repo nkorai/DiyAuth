@@ -30,28 +30,13 @@ namespace SampleApp
 		private void NoneButton_Click(object sender, RoutedEventArgs e)
 		{
 			App.EmailProvider = Constants.EmailOptions.None;
-			NavigateForward();
+			this.Frame.Navigate(typeof(LoginPage));
 		}
 
 		private void SendGridButton_Click(object sender, RoutedEventArgs e)
 		{
 			App.EmailProvider = Constants.EmailOptions.SendGrid;
-			NavigateForward();
-		}
-
-		private void NavigateForward()
-		{
-			switch (App.BackendProvider)
-			{
-				case (Constants.BackendOptions.AzureTableStorage):
-					this.Frame.Navigate(typeof(AzureConfigurationPage));
-					break;
-				case (Constants.BackendOptions.AwsDynamoDb):
-					this.Frame.Navigate(typeof(AWSConfigurationPage));
-					break;
-				default:
-					throw new NotImplementedException("Backend option must be selected");
-			}
+			this.Frame.Navigate(typeof(SendGridConfigurationPage));
 		}
 	}
 }

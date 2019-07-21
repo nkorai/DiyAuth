@@ -15,6 +15,10 @@ namespace DiyAuth.EmailProviders
 		// Interface properties
 		public IAuthenticationProvider AuthenticationProvider { get; set; }
 
+		public string VerificationEmailSubject { get; set; }
+		public string ForgotPasswordEmailSubject { get; set; }
+		public string TwoFactorAuthenticationSubject { get; set; }
+
 		public Uri VerificationTokenRedirectUri { get; set; }
 		public Uri ForgotPasswordRedirectUri { get; set; }
 		public Uri TwoFactorAuthenticationRedirectUri { get; set; }
@@ -29,20 +33,29 @@ namespace DiyAuth.EmailProviders
 		public string CompanyName { get; set; }
 		public SendGridClient Client { get; set; }
 
-		public SendGridEmailProvider(string apiKey, string fromEmail, string companyName, string verificationTokenRedirectUri, string forgotPasswordRedirectUri, string twoFactorAuthRedirectUri)
+		public SendGridEmailProvider(string apiKey, string fromEmail, string companyName, string verificationEmailSubject, string forgotPasswordEmailSubject, string twoFactorAuthenticationSubject, Uri verificationTokenRedirectUri, Uri forgotPasswordRedirectUri, Uri twoFactorAuthRedirectUri)
 		{
 			this.ApiKey = apiKey;
 			this.CompanyName = companyName;
 			this.FromEmail = fromEmail;
 			this.Client = new SendGridClient(apiKey);
+
+			this.VerificationEmailSubject = verificationEmailSubject;
+			this.ForgotPasswordEmailSubject = forgotPasswordEmailSubject;
+			this.TwoFactorAuthenticationSubject = twoFactorAuthenticationSubject;
+
+			this.VerificationTokenRedirectUri = verificationTokenRedirectUri;
+			this.ForgotPasswordRedirectUri = forgotPasswordRedirectUri;
+			this.TwoFactorAuthenticationRedirectUri = twoFactorAuthRedirectUri;
+
 			this.ForgotPasswordEmailTemplate = Resources.ForgotPasswordTemplate;
 			this.VerificationTokenEmailTemplate = Resources.VerificationTokenTemplate;
 			this.TwoFactorAuthenticationEmailTemplate = Resources.TwoFactorTemplate;
 		}
 
-		public static SendGridEmailProvider Create(string apiKey, string fromEmail, string companyName, string verificationTokenRedirectUri, string forgotPasswordRedirectUri, string twoFactorAuthRedirectUri)
+		public static SendGridEmailProvider Create(string apiKey, string fromEmail, string companyName, string verificationEmailSubject, string forgotPasswordEmailSubject, string twoFactorAuthenticationSubject, Uri verificationTokenRedirectUri, Uri forgotPasswordRedirectUri, Uri twoFactorAuthRedirectUri)
 		{
-			var provider = new SendGridEmailProvider(apiKey, fromEmail, companyName, verificationTokenRedirectUri, forgotPasswordRedirectUri, twoFactorAuthRedirectUri);
+			var provider = new SendGridEmailProvider(apiKey, fromEmail, companyName, verificationEmailSubject, forgotPasswordEmailSubject, twoFactorAuthenticationSubject, verificationTokenRedirectUri, forgotPasswordRedirectUri, twoFactorAuthRedirectUri);
 			return provider;
 		}
 

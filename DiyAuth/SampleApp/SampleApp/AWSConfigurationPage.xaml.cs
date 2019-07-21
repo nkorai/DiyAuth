@@ -56,7 +56,7 @@ namespace SampleApp
 			localSettings.Values[Constants.LocalStorage.AwsSecretAccessKey] = secretAccessKey;
 			localSettings.Values[Constants.LocalStorage.AwsRegion] = regionString;
 
-			this.Frame.Navigate(typeof(LoginPage));
+			this.Frame.Navigate(typeof(EmailProviderSelectionPage));
 		}
 
 		private RegionEndpoint GetRegion(string regionString)

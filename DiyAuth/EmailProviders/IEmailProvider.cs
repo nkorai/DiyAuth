@@ -10,6 +10,9 @@ namespace DiyAuth.EmailProviders
 	public interface IEmailProvider
 	{
 		IAuthenticationProvider AuthenticationProvider { get; set; }
+		string VerificationEmailSubject { get; set; }
+		string ForgotPasswordEmailSubject { get; set; }
+		string TwoFactorAuthenticationSubject { get; set; }
 
 		Uri VerificationTokenRedirectUri { get; set; }
 		Uri ForgotPasswordRedirectUri { get; set; }
