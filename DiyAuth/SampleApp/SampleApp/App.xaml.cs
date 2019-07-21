@@ -16,6 +16,7 @@ using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
+using static SampleApp.Constants;
 
 namespace SampleApp
 {
@@ -29,6 +30,8 @@ namespace SampleApp
 		public static string ConnectionString;
 		public static string Token;
 		public static Guid? IdentityId;
+		public static BackendOptions BackendProvider;
+		public static EmailOptions EmailProvider;
 
 		/// <summary>
 		/// Initializes the singleton application object.  This is the first line of authored code

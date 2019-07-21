@@ -29,12 +29,14 @@ namespace SampleApp
 
 		private void AzureBackendButton_Click(object sender, RoutedEventArgs e)
 		{
-			this.Frame.Navigate(typeof(AzureConfigurationPage));
+			App.BackendProvider = Constants.BackendOptions.AzureTableStorage;
+			this.Frame.Navigate(typeof(EmailProviderSelectionPage));
 		}
 
 		private void AWSBackendButton_Click(object sender, RoutedEventArgs e)
 		{
-			this.Frame.Navigate(typeof(AWSConfigurationPage));
+			App.BackendProvider = Constants.BackendOptions.AwsDynamoDb;
+			this.Frame.Navigate(typeof(EmailProviderSelectionPage));
 		}
 	}
 }

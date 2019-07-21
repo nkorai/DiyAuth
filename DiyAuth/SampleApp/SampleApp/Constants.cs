@@ -8,6 +8,18 @@ namespace SampleApp
 {
 	public static class Constants
 	{
+		public enum BackendOptions
+		{
+			AzureTableStorage,
+			AwsDynamoDb
+		}
+
+		public enum EmailOptions
+		{
+			None,
+			SendGrid
+		}
+
 		public static class LocalStorage
 		{
 			public const string AzureStorageConnectionString = "AzureStorageConnectionString";

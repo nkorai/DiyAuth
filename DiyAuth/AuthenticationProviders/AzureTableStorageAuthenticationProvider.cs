@@ -183,6 +183,12 @@ namespace DiyAuth.AuthenticationProviders
 				await this.IdentityTable.ExecuteAsync(createForeignKeyOperation, null, null, cancellationToken).ConfigureAwait(false); // This insert first to ensure there isn't a key conflict
 				await this.IdentityTable.ExecuteAsync(createIdentityOperation, null, null, cancellationToken).ConfigureAwait(false);
 
+				// Create verification token if email provider is set up
+				if (this.EmailProvider != null)
+				{
+					await GenerateVerificationToken(identityEntity.IdentityId, cancellationToken).ConfigureAwait(false);
+				}
+
 				// Token generation
 				var token = Security.GenerateToken();
 				var tokenEntity = new AzureTokenEntity

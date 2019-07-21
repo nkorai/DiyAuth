@@ -439,6 +439,12 @@ namespace DiyAuth.AuthenticationProviders
 				var identityDocument = Document.FromJson(JsonConvert.SerializeObject(identityEntity));
 				var insertIdentityResponse = await this.IdentityTable.PutItemAsync(identityDocument, cancellationToken).ConfigureAwait(false);
 
+				// Create verification token if email provider is set up
+				if (this.EmailProvider != null)
+				{
+					await GenerateVerificationToken(identityEntity.IdentityId, cancellationToken).ConfigureAwait(false);
+				}
+
 				// Token generation
 				var token = Security.GenerateToken();
 				var tokenEntity = new AWSTokenEntity

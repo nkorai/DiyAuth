@@ -132,6 +132,9 @@
     <Compile Include="CreateTokenForIdentityDialog.xaml.cs">
       <DependentUpon>CreateTokenForIdentityDialog.xaml</DependentUpon>
     </Compile>
+    <Compile Include="EmailProviderSelectionPage.xaml.cs">
+      <DependentUpon>EmailProviderSelectionPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="LandingPage.xaml.cs">
       <DependentUpon>LandingPage.xaml</DependentUpon>
     </Compile>
@@ -177,6 +180,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="CreateTokenForIdentityDialog.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="EmailProviderSelectionPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
