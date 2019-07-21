@@ -34,11 +34,11 @@ namespace DiyAuth.EmailProviders
 		public string Domain { get; set; }
 		public string FromEmail { get; set; }
 		public string CompanyName { get; set; }
-		public MailgunClient Client { get; set; }
 
 		public MailgunEmailProvider(string apiKey, string domain, string fromEmail, string companyName, string verificationEmailSubject, string forgotPasswordEmailSubject, string twoFactorAuthenticationSubject, Uri verificationTokenRedirectUri, Uri forgotPasswordRedirectUri, Uri twoFactorAuthRedirectUri)
 		{
 			this.ApiKey = apiKey;
+			this.Domain = domain;
 			this.CompanyName = companyName;
 			this.FromEmail = fromEmail;
 
@@ -61,8 +61,17 @@ namespace DiyAuth.EmailProviders
 			return provider;
 		}
 
+		private void EnsureSettings()
+		{
+			MailgunClient.BaseUrl = this.BaseUrl;
+			MailgunClient.Domain = this.Domain;
+			MailgunClient.ApiKey = this.ApiKey;
+		}
+
 		public async Task SendForgotPasswordEmail(string emailAddress, string subject, CancellationToken cancellationToken = default(CancellationToken))
 		{
+			EnsureSettings();
+
 			var identityEntity = await this.AuthenticationProvider.GetIdentityByEmail(emailAddress).ConfigureAwait(false);
 
 			var verificationToken = await this.AuthenticationProvider.GenerateVerificationToken(identityEntity.IdentityId);
@@ -73,11 +82,13 @@ namespace DiyAuth.EmailProviders
 			content = content.Replace("##__CompanyName__##", this.CompanyName);
 			content = content.Replace("##__VerificationTokenLink__##", verificationTokenLink);
 
-			await this.Client.SendEmail(this.FromEmail, emailAddress, subject, content, cancellationToken);
+			await MailgunClient.SendEmail(this.FromEmail, emailAddress, subject, content, cancellationToken);
 		}
 
 		public async Task SendVerificationEmail(Guid identityId, string subject, CancellationToken cancellationToken = default(CancellationToken))
 		{
+			EnsureSettings();
+
 			var identityEntity = await this.AuthenticationProvider.GetIdentityById(identityId).ConfigureAwait(false);
 
 			var verificationToken = await this.AuthenticationProvider.GenerateVerificationToken(identityEntity.IdentityId);
@@ -88,11 +99,13 @@ namespace DiyAuth.EmailProviders
 			content = content.Replace("##__CompanyName__##", this.CompanyName);
 			content = content.Replace("##__VerificationTokenLink__##", verificationTokenLink);
 
-			await this.Client.SendEmail(this.FromEmail, identityEntity.EmailAddress, subject, content, cancellationToken);
+			await MailgunClient.SendEmail(this.FromEmail, identityEntity.EmailAddress, subject, content, cancellationToken);
 		}
 
 		public async Task SendTwoFactorAuthenticationCodeEmail(Guid identityId, string subject, CancellationToken cancellationToken = default(CancellationToken))
 		{
+			EnsureSettings();
+
 			var identityEntity = await this.AuthenticationProvider.GetIdentityById(identityId).ConfigureAwait(false);
 
 			var verificationToken = await this.AuthenticationProvider.GenerateVerificationToken(identityEntity.IdentityId);
@@ -103,7 +116,7 @@ namespace DiyAuth.EmailProviders
 			content = content.Replace("##__CompanyName__##", this.CompanyName);
 			content = content.Replace("##__VerificationTokenLink__##", verificationTokenLink);
 
-			await this.Client.SendEmail(this.FromEmail, identityEntity.EmailAddress, subject, content, cancellationToken);
+			await MailgunClient.SendEmail(this.FromEmail, identityEntity.EmailAddress, subject, content, cancellationToken);
 		}
 	}
 }

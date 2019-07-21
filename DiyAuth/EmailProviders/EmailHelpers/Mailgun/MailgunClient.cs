@@ -9,30 +9,25 @@ namespace DiyAuth.EmailProviders.EmailHelpers.Mailgun
 {
 	public class MailgunClient
 	{
-		public string BaseUrl { get; set; }
-		public string Domain { get; set; }
-		public string ApiKey { get; set; }
+		public static string BaseUrl { get; set; }
+		public static string Domain { get; set; }
+		public static string ApiKey { get; set; }
 		private static HttpClient Client { get; set; }
 
-		public MailgunClient(string baseUrl, string domain, string apiKey)
+		public static async Task SendEmail(string fromEmail, string toEmail, string subject, string messageContent, CancellationToken cancellationToken)
 		{
-			this.BaseUrl = baseUrl;
-			this.Domain = domain;
-			this.ApiKey = apiKey;
-
-			// Setting up HttpClient with Basic Authentication
-			var url = $"{BaseUrl}/{domain}/";
-			Client = new HttpClient
+			if (Client == null)
 			{
-				BaseAddress = new Uri(url)
-			};
+				var url = $"{BaseUrl}/{Domain}/";
+				Client = new HttpClient
+				{
+					BaseAddress = new Uri(url)
+				};
 
-			var byteArray = Encoding.ASCII.GetBytes($"api:{this.ApiKey}");
-			Client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
-		}
+				var byteArray = Encoding.ASCII.GetBytes($"api:{ApiKey}");
+				Client.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic", Convert.ToBase64String(byteArray));
+			}
 
-		public async Task SendEmail(string fromEmail, string toEmail, string subject, string messageContent, CancellationToken cancellationToken)
-		{
 			using (var content = new MultipartFormDataContent())
 			{
 				content.Add(new StringContent(fromEmail), "from");

@@ -22,8 +22,12 @@
 			<RowDefinition Height="*"/>
 		</Grid.RowDefinitions>
 
-		<TextBlock Grid.Row="1" Grid.Column="1" Text="Mailgun API Key" TextAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"></TextBlock>
-		<TextBox Name="ApiKeyTextBox" VerticalAlignment="Center" Height="30px" Grid.Row="1" Grid.Column="2"></TextBox>
-		<Button Grid.Row="2" Grid.Column="1" Grid.ColumnSpan="2" Click="Next_Click" HorizontalAlignment="Center">Next</Button>
+		<TextBlock Grid.Row="1" Grid.Column="1" Text="Domain Url" TextAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"></TextBlock>
+		<TextBox Name="DomainUrlTextBox" VerticalAlignment="Center" Height="30px" Grid.Row="1" Grid.Column="2"></TextBox>
+
+		<TextBlock Grid.Row="2" Grid.Column="1" Text="Mailgun API Key" TextAlignment="Right" VerticalAlignment="Center" Margin="0,0,10,0"></TextBlock>
+		<TextBox Name="ApiKeyTextBox" VerticalAlignment="Center" Height="30px" Grid.Row="2" Grid.Column="2"></TextBox>
+		
+		<Button Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2" Click="Next_Click" HorizontalAlignment="Center">Next</Button>
 	</Grid>
 </Page>

@@ -29,6 +29,7 @@ namespace SampleApp
 			public const string AwsRegion = "AwsRegion";
 			public const string SendGridApiKey = "SendGridApiKey";
 			public const string MailgunApiKey = "MailgunApiKey";
+			public const string MailgunDomainUrl = "MailgunDomainUrl"; 
 		}
 	}
 }

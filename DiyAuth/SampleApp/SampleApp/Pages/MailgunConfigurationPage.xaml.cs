@@ -32,20 +32,23 @@ namespace SampleApp
 			if (connectionStringExists)
 			{
 				ApiKeyTextBox.Text = localSettings.Values[Constants.LocalStorage.MailgunApiKey] as string;
+				DomainUrlTextBox.Text = localSettings.Values[Constants.LocalStorage.MailgunDomainUrl] as string;
 			}
 		}
 
 		private void Next_Click(object sender, RoutedEventArgs e)
 		{
 			var apiKeyString = ApiKeyTextBox.Text;
+			var domainUrl = DomainUrlTextBox.Text;
 			var defaultUri = new Uri("https://www.diyauth.com/verification/");
 			var defaultSubjectLine = "Hello from your friends at DiyAuth";
 
-			var sendGridEmailProvider = new MailgunEmailProvider(apiKeyString, "diyauth", "noreply", "DiyAuth", defaultSubjectLine, defaultSubjectLine, defaultSubjectLine, defaultUri, defaultUri, defaultUri);
+			var sendGridEmailProvider = new MailgunEmailProvider(apiKeyString, domainUrl, "noreply@diyauth.com", "DiyAuth", defaultSubjectLine, defaultSubjectLine, defaultSubjectLine, defaultUri, defaultUri, defaultUri);
 			App.Authenticator.SetEmailProvider(sendGridEmailProvider);
 
 			var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
 			localSettings.Values[Constants.LocalStorage.MailgunApiKey] = apiKeyString;
+			localSettings.Values[Constants.LocalStorage.MailgunDomainUrl] = domainUrl;
 
 			this.Frame.Navigate(typeof(LoginPage));
 		}
