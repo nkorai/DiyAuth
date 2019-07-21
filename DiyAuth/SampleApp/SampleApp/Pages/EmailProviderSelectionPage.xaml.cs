@@ -38,5 +38,11 @@ namespace SampleApp
 			App.EmailProvider = Constants.EmailOptions.SendGrid;
 			this.Frame.Navigate(typeof(SendGridConfigurationPage));
 		}
+
+		private void MailgunButton_Click(object sender, RoutedEventArgs e)
+		{
+			App.EmailProvider = Constants.EmailOptions.Mailgun;
+			this.Frame.Navigate(typeof(MailgunConfigurationPage));
+		}
 	}
 }

@@ -13,6 +13,7 @@
 			<ColumnDefinition Width="2*"/>
 			<ColumnDefinition Width="4*"/>
 			<ColumnDefinition Width="4*"/>
+			<ColumnDefinition Width="4*"/>
 			<ColumnDefinition Width="2*"/>
 		</Grid.ColumnDefinitions>
 		<Grid.RowDefinitions>
@@ -25,7 +26,7 @@
 		<TextBlock 
 			Grid.Row="1"
 			Grid.Column="1"
-			Grid.ColumnSpan="2"
+			Grid.ColumnSpan="3"
 			FontSize="32px"
 			VerticalAlignment="Center"
 			Text="Please select your preferred email provider:"/>
@@ -50,7 +51,15 @@
 			Content="SendGrid"
 			Click="SendGridButton_Click"/>
 
-
+		<Button
+			x:Name="MailgunButton"
+			Grid.Row="2"
+			Grid.Column="3"
+			HorizontalAlignment="Center"
+			Width="200"
+			Height="100"
+			Content="Mailgun"
+			Click="MailgunButton_Click"/>
 	</Grid>
 
 </Page>

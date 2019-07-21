@@ -119,36 +119,39 @@
     <Compile Include="App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
-    <Compile Include="AWSConfigurationPage.xaml.cs">
+    <Compile Include="Pages\AWSConfigurationPage.xaml.cs">
       <DependentUpon>AWSConfigurationPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="BackendProviderPage.xaml.cs">
+    <Compile Include="Pages\BackendProviderPage.xaml.cs">
       <DependentUpon>BackendProviderPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="ChangePasswordDialog.xaml.cs">
+    <Compile Include="Pages\ChangePasswordDialog.xaml.cs">
       <DependentUpon>ChangePasswordDialog.xaml</DependentUpon>
     </Compile>
     <Compile Include="Constants.cs" />
-    <Compile Include="CreateTokenForIdentityDialog.xaml.cs">
+    <Compile Include="Pages\CreateTokenForIdentityDialog.xaml.cs">
       <DependentUpon>CreateTokenForIdentityDialog.xaml</DependentUpon>
     </Compile>
-    <Compile Include="EmailProviderSelectionPage.xaml.cs">
+    <Compile Include="Pages\EmailProviderSelectionPage.xaml.cs">
       <DependentUpon>EmailProviderSelectionPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="LandingPage.xaml.cs">
+    <Compile Include="Pages\LandingPage.xaml.cs">
       <DependentUpon>LandingPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="LoginPage.xaml.cs">
+    <Compile Include="Pages\LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="AzureConfigurationPage.xaml.cs">
+    <Compile Include="Pages\AzureConfigurationPage.xaml.cs">
       <DependentUpon>AzureConfigurationPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="Pages\MailgunConfigurationPage.xaml.cs">
+      <DependentUpon>MailgunConfigurationPage.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SendGridConfigurationPage.xaml.cs">
+    <Compile Include="Pages\SendGridConfigurationPage.xaml.cs">
       <DependentUpon>SendGridConfigurationPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="VerificationTokenDialog.xaml.cs">
+    <Compile Include="Pages\VerificationTokenDialog.xaml.cs">
       <DependentUpon>VerificationTokenDialog.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
@@ -173,43 +176,47 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Page Include="AWSConfigurationPage.xaml">
+    <Page Include="Pages\AWSConfigurationPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="BackendProviderPage.xaml">
+    <Page Include="Pages\BackendProviderPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="ChangePasswordDialog.xaml">
+    <Page Include="Pages\ChangePasswordDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="CreateTokenForIdentityDialog.xaml">
+    <Page Include="Pages\CreateTokenForIdentityDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="EmailProviderSelectionPage.xaml">
+    <Page Include="Pages\EmailProviderSelectionPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="LandingPage.xaml">
+    <Page Include="Pages\LandingPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="LoginPage.xaml">
+    <Page Include="Pages\LoginPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="AzureConfigurationPage.xaml">
+    <Page Include="Pages\AzureConfigurationPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="SendGridConfigurationPage.xaml">
+    <Page Include="Pages\MailgunConfigurationPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="VerificationTokenDialog.xaml">
+    <Page Include="Pages\SendGridConfigurationPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="Pages\VerificationTokenDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

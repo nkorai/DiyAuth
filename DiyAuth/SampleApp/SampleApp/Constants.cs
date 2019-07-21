@@ -17,7 +17,8 @@ namespace SampleApp
 		public enum EmailOptions
 		{
 			None,
-			SendGrid
+			SendGrid,
+			Mailgun
 		}
 
 		public static class LocalStorage
@@ -27,6 +28,7 @@ namespace SampleApp
 			public const string AwsAccessKeyId = "AwsAccessKeyId";
 			public const string AwsRegion = "AwsRegion";
 			public const string SendGridApiKey = "SendGridApiKey";
+			public const string MailgunApiKey = "MailgunApiKey";
 		}
 	}
 }
