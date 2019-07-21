@@ -421,7 +421,7 @@ namespace DiyAuth.AuthenticationProviders
 			};
 
 			var createOperation = TableOperation.Insert(verificationTokenEntity);
-			var result = await this.TokenTable.ExecuteAsync(createOperation, null, null, cancellationToken).ConfigureAwait(false);
+			var result = await this.VerificationTokenTable.ExecuteAsync(createOperation, null, null, cancellationToken).ConfigureAwait(false);
 			return verificationToken;
 		}
 
@@ -441,23 +441,28 @@ namespace DiyAuth.AuthenticationProviders
 			var retrievedIdentityResult = await this.IdentityTable.ExecuteAsync(retrieveIdentityOperation, null, null, cancellationToken).ConfigureAwait(false);
 			var retrievedIdentityEntity = (AzureIdentityEntity)retrievedIdentityResult?.Result;
 
+			// Set verified property
+			retrievedIdentityEntity.EmailVerified = true;
+			var setOperation = TableOperation.InsertOrReplace(retrievedIdentityEntity);
+			var result = await this.IdentityTable.ExecuteAsync(setOperation, null, null, cancellationToken).ConfigureAwait(false);
+
+			// Clean up if required
 			if (!deleteTokenOnRetrieval)
 			{
 				return retrievedIdentityEntity;
 			}
 
-
 			// Delete the verification token record
 			var deleteVerificationEntity = new AzureVerificationTokenEntity
 			{
-				PartitionKey = Constants.PartitionNames.IdentityPrimary,
+				PartitionKey = Constants.PartitionNames.VerificationTokenPrimary,
 				RowKey = retrievedEntity.VerificationToken.ToString(),
 				ETag = "*"
 			};
 
 			// Delete identity and identity foreign key 
 			var deleteEntityOperation = TableOperation.Delete(deleteVerificationEntity);
-			var entityDeleteResult = await this.IdentityTable.ExecuteAsync(deleteEntityOperation, null, null, cancellationToken).ConfigureAwait(false);
+			var entityDeleteResult = await this.VerificationTokenTable.ExecuteAsync(deleteEntityOperation, null, null, cancellationToken).ConfigureAwait(false);
 
 			return retrievedIdentityEntity;
 		}

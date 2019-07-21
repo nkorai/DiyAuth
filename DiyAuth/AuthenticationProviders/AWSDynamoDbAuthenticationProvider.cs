@@ -595,6 +595,13 @@ namespace DiyAuth.AuthenticationProviders
 
 			// Retrieve IdentityEntity
 			var identity = await GetIdentityById(verificationTokenEntity.IdentityId, cancellationToken).ConfigureAwait(false);
+
+			// Set verified property
+			identity.EmailVerified = true;
+			var identityDocument = Document.FromJson(JsonConvert.SerializeObject(identity));
+			var insertIdentityResponse = await this.IdentityTable.PutItemAsync(identityDocument, cancellationToken).ConfigureAwait(false);
+
+			// Clean up if required
 			if (!deleteTokenOnRetrieval)
 			{
 				return identity;

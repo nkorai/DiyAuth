@@ -148,6 +148,9 @@
     <Compile Include="SendGridConfigurationPage.xaml.cs">
       <DependentUpon>SendGridConfigurationPage.xaml</DependentUpon>
     </Compile>
+    <Compile Include="VerificationTokenDialog.xaml.cs">
+      <DependentUpon>VerificationTokenDialog.xaml</DependentUpon>
+    </Compile>
   </ItemGroup>
   <ItemGroup>
     <AppxManifest Include="Package.appxmanifest">
@@ -203,6 +206,10 @@
       <SubType>Designer</SubType>
     </Page>
     <Page Include="SendGridConfigurationPage.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="VerificationTokenDialog.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
