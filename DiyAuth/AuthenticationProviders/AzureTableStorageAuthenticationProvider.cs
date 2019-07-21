@@ -157,6 +157,15 @@ namespace DiyAuth.AuthenticationProviders
 		{
 			try
 			{
+				var identityExistsCheck = await CheckIdentityExists(emailAddress, cancellationToken).ConfigureAwait(false);
+				if (identityExistsCheck)
+				{
+					return new CreateIdentityResult
+					{
+						Success = false
+					};
+				}
+
 				// Identity generation
 				var perUserSalt = Security.GeneratePerUserSalt();
 				var hashedPassword = Security.GeneratePasswordHash(password, perUserSalt);
