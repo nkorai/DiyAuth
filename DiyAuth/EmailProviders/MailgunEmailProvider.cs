@@ -31,12 +31,12 @@ namespace DiyAuth.EmailProviders
 		// SendGrid specific properties
 		public string ApiKey { get; set; }
 		public string BaseUrl { get; set; } = "https://api.mailgun.net/v3";
-		public string DomainUrl { get; set; }
+		public string Domain { get; set; }
 		public string FromEmail { get; set; }
 		public string CompanyName { get; set; }
 		public MailgunClient Client { get; set; }
 
-		public MailgunEmailProvider(string apiKey, string domainUrl, string fromEmail, string companyName, string verificationEmailSubject, string forgotPasswordEmailSubject, string twoFactorAuthenticationSubject, Uri verificationTokenRedirectUri, Uri forgotPasswordRedirectUri, Uri twoFactorAuthRedirectUri)
+		public MailgunEmailProvider(string apiKey, string domain, string fromEmail, string companyName, string verificationEmailSubject, string forgotPasswordEmailSubject, string twoFactorAuthenticationSubject, Uri verificationTokenRedirectUri, Uri forgotPasswordRedirectUri, Uri twoFactorAuthRedirectUri)
 		{
 			this.ApiKey = apiKey;
 			this.CompanyName = companyName;
