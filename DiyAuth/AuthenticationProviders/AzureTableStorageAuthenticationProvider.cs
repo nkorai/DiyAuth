@@ -90,6 +90,8 @@ namespace DiyAuth.AuthenticationProviders
 		{
 			try
 			{
+				emailAddress = emailAddress?.ToLowerInvariant();
+
 				// Check to see if email exists
 				var retrieveOperation = TableOperation.Retrieve<AzureIdentityForeignKeyEntity>(Constants.PartitionNames.EmailAddressToIdentityForeignKey, emailAddress);
 				var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation, null, null, cancellationToken).ConfigureAwait(false);
@@ -157,6 +159,8 @@ namespace DiyAuth.AuthenticationProviders
 		{
 			try
 			{
+				emailAddress = emailAddress?.ToLowerInvariant();
+
 				var identityExistsCheck = await CheckIdentityExists(emailAddress, cancellationToken).ConfigureAwait(false);
 				if (identityExistsCheck)
 				{
@@ -235,6 +239,8 @@ namespace DiyAuth.AuthenticationProviders
 		{
 			try
 			{
+				emailAddress = emailAddress?.ToLowerInvariant();
+
 				var retrieveOperation = TableOperation.Retrieve<AzureIdentityForeignKeyEntity>(Constants.PartitionNames.EmailAddressToIdentityForeignKey, emailAddress);
 				var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation, null, null, cancellationToken).ConfigureAwait(false);
 				var retrievedEntity = (AzureIdentityForeignKeyEntity)retrievedResult?.Result;
@@ -395,6 +401,8 @@ namespace DiyAuth.AuthenticationProviders
 
 		public async Task<IIdentityEntity> GetIdentityByEmail(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
 		{
+			emailAddress = emailAddress?.ToLowerInvariant();
+
 			// Check to see if email exists
 			var retrieveOperation = TableOperation.Retrieve<AzureIdentityForeignKeyEntity>(Constants.PartitionNames.EmailAddressToIdentityForeignKey, emailAddress);
 			var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation, null, null, cancellationToken).ConfigureAwait(false);

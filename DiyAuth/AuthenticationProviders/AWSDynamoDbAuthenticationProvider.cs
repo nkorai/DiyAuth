@@ -290,6 +290,7 @@ namespace DiyAuth.AuthenticationProviders
 			try
 			{
 				// Check to see if email exists
+				emailAddress = emailAddress?.ToLowerInvariant();
 				var queryResponse = await QueryEmailSecondaryIndex(emailAddress, cancellationToken).ConfigureAwait(false);
 				if (queryResponse.Count != 1)
 				{
@@ -395,6 +396,8 @@ namespace DiyAuth.AuthenticationProviders
 
 		public async Task<bool> CheckIdentityExists(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
 		{
+			emailAddress = emailAddress?.ToLowerInvariant();
+
 			var result = await QueryEmailSecondaryIndex(emailAddress, cancellationToken).ConfigureAwait(false);
 			var identityExists = result.Count > 0;
 			return identityExists;
@@ -402,6 +405,8 @@ namespace DiyAuth.AuthenticationProviders
 
 		private async Task<QueryResponse> QueryEmailSecondaryIndex(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
 		{
+			emailAddress = emailAddress?.ToLowerInvariant();
+
 			var partitionKeyDescriptor = ":partitionKey";
 			var emailDescriptor = ":partition";
 			var queryRequest = new QueryRequest
@@ -425,6 +430,8 @@ namespace DiyAuth.AuthenticationProviders
 		{
 			try
 			{
+				emailAddress = emailAddress?.ToLowerInvariant();
+
 				var identityExistsCheck = await CheckIdentityExists(emailAddress, cancellationToken).ConfigureAwait(false);
 				if (identityExistsCheck)
 				{
@@ -556,6 +563,8 @@ namespace DiyAuth.AuthenticationProviders
 
 		public async Task<IIdentityEntity> GetIdentityByEmail(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
 		{
+			emailAddress = emailAddress?.ToLowerInvariant();
+
 			// Check to see if email exists
 			var queryResponse = await QueryEmailSecondaryIndex(emailAddress, cancellationToken).ConfigureAwait(false);
 			if (queryResponse.Count != 1)
