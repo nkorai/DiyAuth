@@ -18,9 +18,23 @@ namespace DiyAuth.AuthenticationEntities.Azure
 			}
 		}
 
-		public string EmailAddress { get; set; }
+		private string emailAddress;
+		public string EmailAddress
+		{
+			get
+			{
+				return emailAddress?.ToLowerInvariant();
+			}
+			set
+			{
+				emailAddress = value?.ToLowerInvariant();
+			}
+		}
+
 		public string HashedPassword { get; set; }
 		public string PerUserSalt { get; set; }
+		public bool EmailVerified { get; set; }
+
 
 		public AzureIdentityEntity()
 		{

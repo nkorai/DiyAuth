@@ -31,7 +31,7 @@ namespace SampleApp
 			var localSettings = Windows.Storage.ApplicationData.Current.LocalSettings;
 			localSettings.Values[Constants.LocalStorage.AzureStorageConnectionString] = connectionString;
 
-			this.Frame.Navigate(typeof(LoginPage));
+			this.Frame.Navigate(typeof(EmailProviderSelectionPage));
 		}
 	}
 }

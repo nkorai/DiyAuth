@@ -12,11 +12,11 @@ namespace DiyAuth.AuthenticationEntities.Azure
 		{
 			get
 			{
-				return this.RowKey;
+				return this.RowKey?.ToLowerInvariant();
 			}
 			set
 			{
-				this.RowKey = value;
+				this.RowKey = value?.ToLowerInvariant();
 			}
 		}
 
@@ -24,7 +24,7 @@ namespace DiyAuth.AuthenticationEntities.Azure
 
 		public AzureIdentityForeignKeyEntity()
 		{
-			this.PartitionKey = Constants.PartitionNames.IdentityForeignKey;
+			this.PartitionKey = Constants.PartitionNames.EmailAddressToIdentityForeignKey;
 		}
 	}
 }

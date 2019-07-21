@@ -1,5 +1,6 @@
 ﻿using DiyAuth.AuthenticationEntities;
 using DiyAuth.AuthenticationEntities.Azure;
+using DiyAuth.EmailProviders;
 using DiyAuth.Models;
 using DiyAuth.Utility;
 using Microsoft.WindowsAzure.Storage;
@@ -14,13 +15,20 @@ namespace DiyAuth.AuthenticationProviders
 {
 	public class AzureTableStorageAuthenticationProvider : IAuthenticationProvider
 	{
+		// Interface properties
+		public IEmailProvider EmailProvider { get; set; }
+		public bool AllowUnverifiedIdentities { get; set; }
+
+		// Azure specific properties
 		public string ConnectionString { get; set; }
 		public string IdentityTableName { get; set; } = Constants.TableNames.IdentityTable;
 		public string TokenTableName { get; set; } = Constants.TableNames.TokenTable;
+		public string VerificationTokenTableName { get; set; } = Constants.TableNames.VerificationTokenTable;
 
 		public CloudStorageAccount StorageAccount { get; private set; }
 		public CloudTable IdentityTable { get; private set; }
 		public CloudTable TokenTable { get; private set; }
+		public CloudTable VerificationTokenTable { get; private set; }
 		public CloudTableClient TableClient { get; private set; }
 
 		public AzureTableStorageAuthenticationProvider(string storageAccountConnectionString)
@@ -42,9 +50,17 @@ namespace DiyAuth.AuthenticationProviders
 
 			this.IdentityTable = this.TableClient.GetTableReference(this.IdentityTableName);
 			this.TokenTable = this.TableClient.GetTableReference(this.TokenTableName);
+			this.VerificationTokenTable = this.TableClient.GetTableReference(this.VerificationTokenTableName);
 
 			await this.IdentityTable.CreateIfNotExistsAsync(null, null, cancellationToken).ConfigureAwait(false);
 			await this.TokenTable.CreateIfNotExistsAsync(null, null, cancellationToken).ConfigureAwait(false);
+			await this.VerificationTokenTable.CreateIfNotExistsAsync(null, null, cancellationToken).ConfigureAwait(false);
+		}
+
+		public void SetEmailProvider(IEmailProvider emailProvider)
+		{
+			this.EmailProvider = emailProvider;
+			emailProvider.AuthenticationProvider = this;
 		}
 
 		public async Task<AuthenticateResult> Authenticate(string token, CancellationToken cancellationToken = default(CancellationToken))
@@ -54,6 +70,7 @@ namespace DiyAuth.AuthenticationProviders
 				var retrieveOperation = TableOperation.Retrieve<AzureTokenEntity>(Constants.PartitionNames.TokenPrimary, token);
 				var retrievedResult = await this.TokenTable.ExecuteAsync(retrieveOperation, null, null, cancellationToken).ConfigureAwait(false);
 				var retrievedEntity = (AzureTokenEntity)retrievedResult?.Result;
+				
 				return new AuthenticateResult
 				{
 					Success = true,
@@ -73,8 +90,10 @@ namespace DiyAuth.AuthenticationProviders
 		{
 			try
 			{
+				emailAddress = emailAddress?.ToLowerInvariant();
+
 				// Check to see if email exists
-				var retrieveOperation = TableOperation.Retrieve<AzureIdentityForeignKeyEntity>(Constants.PartitionNames.IdentityForeignKey, emailAddress);
+				var retrieveOperation = TableOperation.Retrieve<AzureIdentityForeignKeyEntity>(Constants.PartitionNames.EmailAddressToIdentityForeignKey, emailAddress);
 				var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation, null, null, cancellationToken).ConfigureAwait(false);
 				var retrievedEntity = (AzureIdentityForeignKeyEntity)retrievedResult?.Result;
 				if (retrievedEntity == null)
@@ -89,6 +108,16 @@ namespace DiyAuth.AuthenticationProviders
 				var retrieveIdentityOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, retrievedEntity.IdentityId.ToString());
 				var retrievedIdentityResult = await this.IdentityTable.ExecuteAsync(retrieveIdentityOperation, null, null, cancellationToken).ConfigureAwait(false);
 				var retrievedIdentityEntity = (AzureIdentityEntity)retrievedIdentityResult?.Result;
+
+				if (this.EmailProvider != null && !retrievedIdentityEntity.EmailVerified && !this.AllowUnverifiedIdentities)
+				{
+					return new AuthorizeResult
+					{
+						Success = false,
+						IdentityId = retrievedEntity.IdentityId,
+						Message = "Identity has not been verified by email yet"
+					};
+				}
 
 				// Check if provided password is valid
 				var passwordMatches = Security.PasswordMatches(retrievedIdentityEntity.PerUserSalt, password, retrievedIdentityEntity.HashedPassword);
@@ -130,6 +159,17 @@ namespace DiyAuth.AuthenticationProviders
 		{
 			try
 			{
+				emailAddress = emailAddress?.ToLowerInvariant();
+
+				var identityExistsCheck = await CheckIdentityExists(emailAddress, cancellationToken).ConfigureAwait(false);
+				if (identityExistsCheck)
+				{
+					return new CreateIdentityResult
+					{
+						Success = false
+					};
+				}
+
 				// Identity generation
 				var perUserSalt = Security.GeneratePerUserSalt();
 				var hashedPassword = Security.GeneratePasswordHash(password, perUserSalt);
@@ -155,6 +195,18 @@ namespace DiyAuth.AuthenticationProviders
 				// Insert identity information
 				await this.IdentityTable.ExecuteAsync(createForeignKeyOperation, null, null, cancellationToken).ConfigureAwait(false); // This insert first to ensure there isn't a key conflict
 				await this.IdentityTable.ExecuteAsync(createIdentityOperation, null, null, cancellationToken).ConfigureAwait(false);
+
+				// Create verification token if email provider is set up
+				if (this.EmailProvider != null)
+				{
+					await this.EmailProvider.SendVerificationEmail(identityEntity.IdentityId, this.EmailProvider.VerificationEmailSubject, cancellationToken).ConfigureAwait(false);
+					// Do not create token until identity is verified 
+					return new CreateIdentityResult
+					{
+						Success = true,
+						IdentityId = identityEntity.IdentityId
+					};
+				}
 
 				// Token generation
 				var token = Security.GenerateToken();
@@ -187,7 +239,9 @@ namespace DiyAuth.AuthenticationProviders
 		{
 			try
 			{
-				var retrieveOperation = TableOperation.Retrieve<AzureIdentityForeignKeyEntity>(Constants.PartitionNames.IdentityForeignKey, emailAddress);
+				emailAddress = emailAddress?.ToLowerInvariant();
+
+				var retrieveOperation = TableOperation.Retrieve<AzureIdentityForeignKeyEntity>(Constants.PartitionNames.EmailAddressToIdentityForeignKey, emailAddress);
 				var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation, null, null, cancellationToken).ConfigureAwait(false);
 				var retrievedEntity = (AzureIdentityForeignKeyEntity)retrievedResult?.Result;
 				if (retrievedEntity == null)
@@ -297,7 +351,7 @@ namespace DiyAuth.AuthenticationProviders
 
 			var deleteForeignKeyEntity = new AzureIdentityForeignKeyEntity
 			{
-				PartitionKey = Constants.PartitionNames.IdentityForeignKey,
+				PartitionKey = Constants.PartitionNames.EmailAddressToIdentityForeignKey,
 				RowKey = retrievedEntity.EmailAddress,
 				ETag = "*"
 			};
@@ -335,6 +389,90 @@ namespace DiyAuth.AuthenticationProviders
 
 			var entityDeleteResult = await this.IdentityTable.ExecuteAsync(deleteEntityOperation, null, null, cancellationToken).ConfigureAwait(false);
 			var foreignKeyDeleteResult = await this.IdentityTable.ExecuteAsync(deleteForeignKeyOperation, null, null, cancellationToken).ConfigureAwait(false);
+		}
+
+		public async Task<IIdentityEntity> GetIdentityById(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			var retrieveOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, identityId.ToString());
+			var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation, null, null, cancellationToken).ConfigureAwait(false);
+			var retrievedEntity = (AzureIdentityEntity)retrievedResult.Result;
+			return retrievedEntity;
+		}
+
+		public async Task<IIdentityEntity> GetIdentityByEmail(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			emailAddress = emailAddress?.ToLowerInvariant();
+
+			// Check to see if email exists
+			var retrieveOperation = TableOperation.Retrieve<AzureIdentityForeignKeyEntity>(Constants.PartitionNames.EmailAddressToIdentityForeignKey, emailAddress);
+			var retrievedResult = await this.IdentityTable.ExecuteAsync(retrieveOperation, null, null, cancellationToken).ConfigureAwait(false);
+			var retrievedEntity = (AzureIdentityForeignKeyEntity)retrievedResult?.Result;
+			if (retrievedEntity == null)
+			{
+				throw new KeyNotFoundException($"The EmailAddress '{emailAddress}' was not found");
+			}
+
+			// Retrieve IdentityEntity
+			var retrieveIdentityOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, retrievedEntity.IdentityId.ToString());
+			var retrievedIdentityResult = await this.IdentityTable.ExecuteAsync(retrieveIdentityOperation, null, null, cancellationToken).ConfigureAwait(false);
+			var retrievedIdentityEntity = (AzureIdentityEntity)retrievedIdentityResult?.Result;
+			return retrievedIdentityEntity;
+		}
+
+		public async Task<string> GenerateVerificationToken(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			var verificationToken = Security.GenerateToken();
+			var verificationTokenEntity = new AzureVerificationTokenEntity
+			{
+				VerificationToken = verificationToken,
+				IdentityId = identityId
+			};
+
+			var createOperation = TableOperation.Insert(verificationTokenEntity);
+			var result = await this.VerificationTokenTable.ExecuteAsync(createOperation, null, null, cancellationToken).ConfigureAwait(false);
+			return verificationToken;
+		}
+
+		public async Task<IIdentityEntity> VerifyVerificationToken(string verificationToken, bool deleteTokenOnRetrieval = true, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			// Check to see if VerificationToken exists
+			var retrieveOperation = TableOperation.Retrieve<AzureVerificationTokenEntity>(Constants.PartitionNames.VerificationTokenPrimary, verificationToken);
+			var retrievedResult = await this.VerificationTokenTable.ExecuteAsync(retrieveOperation, null, null, cancellationToken).ConfigureAwait(false);
+			var retrievedEntity = (AzureVerificationTokenEntity)retrievedResult?.Result;
+			if (retrievedEntity == null)
+			{
+				throw new KeyNotFoundException($"The VerificationToken '{verificationToken}' was not found");
+			}
+
+			// Retrieve IdentityEntity
+			var retrieveIdentityOperation = TableOperation.Retrieve<AzureIdentityEntity>(Constants.PartitionNames.IdentityPrimary, retrievedEntity.IdentityId.ToString());
+			var retrievedIdentityResult = await this.IdentityTable.ExecuteAsync(retrieveIdentityOperation, null, null, cancellationToken).ConfigureAwait(false);
+			var retrievedIdentityEntity = (AzureIdentityEntity)retrievedIdentityResult?.Result;
+
+			// Set verified property
+			retrievedIdentityEntity.EmailVerified = true;
+			var setOperation = TableOperation.InsertOrReplace(retrievedIdentityEntity);
+			var result = await this.IdentityTable.ExecuteAsync(setOperation, null, null, cancellationToken).ConfigureAwait(false);
+
+			// Clean up if required
+			if (!deleteTokenOnRetrieval)
+			{
+				return retrievedIdentityEntity;
+			}
+
+			// Delete the verification token record
+			var deleteVerificationEntity = new AzureVerificationTokenEntity
+			{
+				PartitionKey = Constants.PartitionNames.VerificationTokenPrimary,
+				RowKey = retrievedEntity.VerificationToken.ToString(),
+				ETag = "*"
+			};
+
+			// Delete identity and identity foreign key 
+			var deleteEntityOperation = TableOperation.Delete(deleteVerificationEntity);
+			var entityDeleteResult = await this.VerificationTokenTable.ExecuteAsync(deleteEntityOperation, null, null, cancellationToken).ConfigureAwait(false);
+
+			return retrievedIdentityEntity;
 		}
 	}
 }

@@ -1,0 +1,65 @@
+﻿<Page
+    x:Class="SampleApp.EmailProviderSelectionPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:SampleApp"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+
+	<Grid>
+		<Grid.ColumnDefinitions>
+			<ColumnDefinition Width="2*"/>
+			<ColumnDefinition Width="4*"/>
+			<ColumnDefinition Width="4*"/>
+			<ColumnDefinition Width="4*"/>
+			<ColumnDefinition Width="2*"/>
+		</Grid.ColumnDefinitions>
+		<Grid.RowDefinitions>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="*"/>
+			<RowDefinition Height="*"/>
+		</Grid.RowDefinitions>
+
+		<TextBlock 
+			Grid.Row="1"
+			Grid.Column="1"
+			Grid.ColumnSpan="3"
+			FontSize="32px"
+			VerticalAlignment="Center"
+			Text="Please select your preferred email provider:"/>
+
+		<Button
+			x:Name="NoneButton"
+			Grid.Row="2"
+			Grid.Column="1"
+			HorizontalAlignment="Center"
+			Width="200"
+			Height="100"
+			Content="None"
+			Click="NoneButton_Click"/>
+
+		<Button
+			x:Name="SendGridButton"
+			Grid.Row="2"
+			Grid.Column="2"
+			HorizontalAlignment="Center"
+			Width="200"
+			Height="100"
+			Content="SendGrid"
+			Click="SendGridButton_Click"/>
+
+		<Button
+			x:Name="MailgunButton"
+			Grid.Row="2"
+			Grid.Column="3"
+			HorizontalAlignment="Center"
+			Width="200"
+			Height="100"
+			Content="Mailgun"
+			Click="MailgunButton_Click"/>
+	</Grid>
+
+</Page>

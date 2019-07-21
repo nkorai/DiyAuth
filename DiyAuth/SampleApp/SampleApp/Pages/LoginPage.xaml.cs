@@ -64,7 +64,36 @@ namespace SampleApp
 					var result = await App.Authenticator.CreateIdentity(CreateEmailAddressTextBlock.Text, CreatePasswordBox.Password);
 					if (result.Success)
 					{
-						await AuthenticateAndNavigate(result.Token);
+						if (App.Authenticator.EmailProvider != null)
+						{
+							var verificationTokenDialog = new VerificationTokenDialog();
+							var contentDialogResult = await verificationTokenDialog.ShowAsync();
+
+							// Primary button was clicked
+							if (contentDialogResult == ContentDialogResult.Primary)
+							{
+								var verificationTokenResult = await App.Authenticator.VerifyVerificationToken(VerificationTokenDialog.VerificationToken);
+								if (verificationTokenResult == null)
+								{
+									var incorrectDialog = new ContentDialog
+									{
+										Title = "Error",
+										Content = $"The verification token you provided is incorrect.",
+										CloseButtonText = "Ok"
+									};
+
+									await incorrectDialog.ShowAsync();
+									return;
+								}
+
+								var tokenResult = await App.Authenticator.GenerateTokenForIdentityId(verificationTokenResult.IdentityId);
+								await AuthenticateAndNavigate(tokenResult.Token);
+							}
+						}
+						else
+						{
+							await AuthenticateAndNavigate(result.Token);
+						}
 					}
 					else
 					{

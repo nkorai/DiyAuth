@@ -8,7 +8,9 @@ using Amazon;
 using Amazon.DynamoDBv2;
 using Amazon.DynamoDBv2.DocumentModel;
 using Amazon.DynamoDBv2.Model;
+using DiyAuth.AuthenticationEntities;
 using DiyAuth.AuthenticationEntities.AWS;
+using DiyAuth.EmailProviders;
 using DiyAuth.Models;
 using DiyAuth.Utility;
 using Newtonsoft.Json;
@@ -17,6 +19,11 @@ namespace DiyAuth.AuthenticationProviders
 {
 	public class AWSDynamoDbAuthenticationProvider : IAuthenticationProvider
 	{
+		// Interface properties
+		public IEmailProvider EmailProvider { get; set; }
+		public bool AllowUnverifiedIdentities { get; set; }
+
+		// AWS specific properties
 		public string AwsAccessKeyId { get; set; }
 		public string AwsSecretAccessKey { get; set; }
 
@@ -24,9 +31,11 @@ namespace DiyAuth.AuthenticationProviders
 
 		public string IdentityTableName { get; set; } = Constants.TableNames.IdentityTable;
 		public string TokenTableName { get; set; } = Constants.TableNames.TokenTable;
+		public string VerificationTokenTableName { get; set; } = Constants.TableNames.VerificationTokenTable;
 
 		public Table IdentityTable { get; set; }
 		public Table TokenTable { get; set; }
+		public Table VerificationTokenTable { get; set; }
 
 		public IAmazonDynamoDB DynamoDbClient { get; private set; }
 
@@ -47,7 +56,7 @@ namespace DiyAuth.AuthenticationProviders
 		public async Task Initialize(CancellationToken cancellationToken = default(CancellationToken))
 		{
 			var tablesAdded = false;
-			var allTables = new List<string>() { this.IdentityTableName, this.TokenTableName };
+			var allTables = new List<string>() { this.IdentityTableName, this.TokenTableName, this.VerificationTokenTableName };
 
 			this.DynamoDbClient = new AmazonDynamoDBClient(this.AwsAccessKeyId, this.AwsSecretAccessKey, this.RegionEndpoint);
 			var tableResponse = await this.DynamoDbClient.ListTablesAsync(cancellationToken).ConfigureAwait(false);
@@ -98,7 +107,7 @@ namespace DiyAuth.AuthenticationProviders
 					GlobalSecondaryIndexes = new List<GlobalSecondaryIndex>{
 						new GlobalSecondaryIndex
 						{
-							IndexName = Constants.PartitionNames.IdentityForeignKey,
+							IndexName = Constants.PartitionNames.EmailAddressToIdentityForeignKey,
 							ProvisionedThroughput = new ProvisionedThroughput
 							{
 								ReadCapacityUnits = 10,
@@ -168,6 +177,44 @@ namespace DiyAuth.AuthenticationProviders
 				tablesAdded = true;
 			}
 
+			if (!currentTables.Contains(this.VerificationTokenTableName))
+			{
+				var tableRequest = new CreateTableRequest
+				{
+					TableName = this.VerificationTokenTableName,
+					ProvisionedThroughput = new ProvisionedThroughput { ReadCapacityUnits = 10, WriteCapacityUnits = 10 },
+					KeySchema = new List<KeySchemaElement>
+					{
+						new KeySchemaElement
+						{
+							AttributeName = nameof(AWSVerificationTokenEntity.PartitionKey),
+							KeyType = KeyType.HASH
+						},
+						new KeySchemaElement
+						{
+							AttributeName = nameof(AWSVerificationTokenEntity.VerificationToken),
+							KeyType = KeyType.RANGE
+						},
+					},
+					AttributeDefinitions = new List<AttributeDefinition>
+					{
+						new AttributeDefinition
+						{
+							AttributeName =  nameof(AWSVerificationTokenEntity.PartitionKey),
+							AttributeType = ScalarAttributeType.S
+						},
+						new AttributeDefinition
+						{
+							AttributeName =  nameof(AWSVerificationTokenEntity.VerificationToken),
+							AttributeType = ScalarAttributeType.S
+						}
+					}
+				};
+
+				await this.DynamoDbClient.CreateTableAsync(tableRequest, cancellationToken).ConfigureAwait(false);
+				tablesAdded = true;
+			}
+
 			if (tablesAdded)
 			{
 				while (true)
@@ -194,6 +241,7 @@ namespace DiyAuth.AuthenticationProviders
 
 			this.IdentityTable = Table.LoadTable(this.DynamoDbClient, IdentityTableName);
 			this.TokenTable = Table.LoadTable(this.DynamoDbClient, TokenTableName);
+			this.VerificationTokenTable = Table.LoadTable(this.DynamoDbClient, VerificationTokenTableName);
 		}
 
 		private async Task<TableStatus> GetTableStatus(string tableName, CancellationToken cancellationToken)
@@ -208,6 +256,12 @@ namespace DiyAuth.AuthenticationProviders
 			{
 				return string.Empty;
 			}
+		}
+
+		public void SetEmailProvider(IEmailProvider emailProvider)
+		{
+			this.EmailProvider = emailProvider;
+			emailProvider.AuthenticationProvider = this;
 		}
 
 		public async Task<AuthenticateResult> Authenticate(string token, CancellationToken cancellationToken = default(CancellationToken))
@@ -236,6 +290,7 @@ namespace DiyAuth.AuthenticationProviders
 			try
 			{
 				// Check to see if email exists
+				emailAddress = emailAddress?.ToLowerInvariant();
 				var queryResponse = await QueryEmailSecondaryIndex(emailAddress, cancellationToken).ConfigureAwait(false);
 				if (queryResponse.Count != 1)
 				{
@@ -259,6 +314,17 @@ namespace DiyAuth.AuthenticationProviders
 					return new AuthorizeResult
 					{
 						Success = false
+					};
+				}
+
+				// Email verification check
+				if (this.EmailProvider != null && !identityEntity.EmailVerified && !this.AllowUnverifiedIdentities)
+				{
+					return new AuthorizeResult
+					{
+						Success = false,
+						IdentityId = identityEntity.IdentityId,
+						Message = "Identity has not been verified by email yet"
 					};
 				}
 
@@ -330,6 +396,8 @@ namespace DiyAuth.AuthenticationProviders
 
 		public async Task<bool> CheckIdentityExists(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
 		{
+			emailAddress = emailAddress?.ToLowerInvariant();
+
 			var result = await QueryEmailSecondaryIndex(emailAddress, cancellationToken).ConfigureAwait(false);
 			var identityExists = result.Count > 0;
 			return identityExists;
@@ -337,16 +405,18 @@ namespace DiyAuth.AuthenticationProviders
 
 		private async Task<QueryResponse> QueryEmailSecondaryIndex(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
 		{
+			emailAddress = emailAddress?.ToLowerInvariant();
+
 			var partitionKeyDescriptor = ":partitionKey";
 			var emailDescriptor = ":partition";
 			var queryRequest = new QueryRequest
 			{
 				TableName = this.IdentityTableName,
-				IndexName = Constants.PartitionNames.IdentityForeignKey,
+				IndexName = Constants.PartitionNames.EmailAddressToIdentityForeignKey,
 				KeyConditionExpression = $"SecondaryPartitionKey = {partitionKeyDescriptor} and EmailAddress = {emailDescriptor}",
 				ExpressionAttributeValues = new Dictionary<string, AttributeValue>
 				{
-					[partitionKeyDescriptor] = new AttributeValue { S = Constants.PartitionNames.IdentityForeignKey },
+					[partitionKeyDescriptor] = new AttributeValue { S = Constants.PartitionNames.EmailAddressToIdentityForeignKey },
 					[emailDescriptor] = new AttributeValue { S = emailAddress }
 				},
 				ScanIndexForward = true
@@ -360,6 +430,17 @@ namespace DiyAuth.AuthenticationProviders
 		{
 			try
 			{
+				emailAddress = emailAddress?.ToLowerInvariant();
+
+				var identityExistsCheck = await CheckIdentityExists(emailAddress, cancellationToken).ConfigureAwait(false);
+				if (identityExistsCheck)
+				{
+					return new CreateIdentityResult
+					{
+						Success = false
+					};
+				}
+
 				// Identity generation
 				var perUserSalt = Security.GeneratePerUserSalt();
 				var hashedPassword = Security.GeneratePasswordHash(password, perUserSalt);
@@ -374,6 +455,18 @@ namespace DiyAuth.AuthenticationProviders
 				var identityDocument = Document.FromJson(JsonConvert.SerializeObject(identityEntity));
 				var insertIdentityResponse = await this.IdentityTable.PutItemAsync(identityDocument, cancellationToken).ConfigureAwait(false);
 
+				// Create verification token if email provider is set up
+				if (this.EmailProvider != null)
+				{
+					await this.EmailProvider.SendVerificationEmail(identityEntity.IdentityId, this.EmailProvider.VerificationEmailSubject, cancellationToken).ConfigureAwait(false);
+					
+					// Do not create token until identity is verified 
+					return new CreateIdentityResult
+					{
+						Success = true,
+						IdentityId = identityEntity.IdentityId
+					};
+				}
 				// Token generation
 				var token = Security.GenerateToken();
 				var tokenEntity = new AWSTokenEntity
@@ -459,6 +552,73 @@ namespace DiyAuth.AuthenticationProviders
 				Token = token,
 				IdentityId = identityId
 			};
+		}
+
+		public async Task<IIdentityEntity> GetIdentityById(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			var identityResult = await this.IdentityTable.GetItemAsync(Constants.PartitionNames.IdentityPrimary, identityId.ToString(), cancellationToken).ConfigureAwait(false);
+			var identityEntity = JsonConvert.DeserializeObject<AWSIdentityEntity>(identityResult.ToJson());
+			return identityEntity;
+		}
+
+		public async Task<IIdentityEntity> GetIdentityByEmail(string emailAddress, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			emailAddress = emailAddress?.ToLowerInvariant();
+
+			// Check to see if email exists
+			var queryResponse = await QueryEmailSecondaryIndex(emailAddress, cancellationToken).ConfigureAwait(false);
+			if (queryResponse.Count != 1)
+			{
+				throw new KeyNotFoundException($"The EmailAddress '{emailAddress}' was not found");
+			}
+
+			var identitySecondaryResult = queryResponse.Items.First();
+			var identityId = identitySecondaryResult[nameof(AWSIdentityEntity.IdentityId)].S;
+
+			// Retrieve IdentityEntity
+			var identityResult = await this.IdentityTable.GetItemAsync(Constants.PartitionNames.IdentityPrimary, identityId, cancellationToken).ConfigureAwait(false);
+			var identityEntity = JsonConvert.DeserializeObject<AWSIdentityEntity>(identityResult.ToJson());
+
+			return identityEntity;
+		}
+
+		public async Task<string> GenerateVerificationToken(Guid identityId, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			var verificationToken = Security.GenerateToken();
+			var verificationTokenEntity = new AWSVerificationTokenEntity
+			{
+				VerificationToken = verificationToken,
+				IdentityId = identityId
+			};
+
+			var verificationTokenDocument = Document.FromJson(JsonConvert.SerializeObject(verificationTokenEntity));
+			var insertTokenResponse = await this.VerificationTokenTable.PutItemAsync(verificationTokenDocument, cancellationToken).ConfigureAwait(false);
+			return verificationToken;
+		}
+
+		public async Task<IIdentityEntity> VerifyVerificationToken(string verificationToken, bool deleteTokenOnRetrieval = true, CancellationToken cancellationToken = default(CancellationToken))
+		{
+			// Check to see if VerificationToken exists
+			var verificationTokenResult = await this.VerificationTokenTable.GetItemAsync(Constants.PartitionNames.VerificationTokenPrimary, verificationToken, cancellationToken).ConfigureAwait(false);
+			var verificationTokenEntity = JsonConvert.DeserializeObject<AWSVerificationTokenEntity>(verificationTokenResult.ToJson());
+
+			// Retrieve IdentityEntity
+			var identity = await GetIdentityById(verificationTokenEntity.IdentityId, cancellationToken).ConfigureAwait(false);
+
+			// Set verified property
+			identity.EmailVerified = true;
+			var identityDocument = Document.FromJson(JsonConvert.SerializeObject(identity));
+			var insertIdentityResponse = await this.IdentityTable.PutItemAsync(identityDocument, cancellationToken).ConfigureAwait(false);
+
+			// Clean up if required
+			if (!deleteTokenOnRetrieval)
+			{
+				return identity;
+			}
+
+			// Delete the verification token record
+			var deleteResult = await this.VerificationTokenTable.DeleteItemAsync(Constants.PartitionNames.VerificationTokenPrimary, verificationToken, cancellationToken).ConfigureAwait(false);
+			return identity;
 		}
 	}
 }
