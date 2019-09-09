@@ -4,7 +4,18 @@
 	<TargetFramework>netstandard2.0</TargetFramework>
 	<Platforms>x64</Platforms>
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	<NuspecFile>../DiyAuth.nuspec</NuspecFile>
+	<Version>1.0.7.2</Version>
+	<Authors>Nausherwan Korai</Authors>
+	<PackageIconUrl>https://raw.githubusercontent.com/nkorai/DiyAuth/master/icon.jpg</PackageIconUrl>
+	<Description>DIY Auth is a project aimed at placing the control and responsibility of user authentication in your hands. It implements a simple authorization and authentication scheme following industry best practices that is plug-and-play to help you jump start your next project. Furthermore it stores your user's authentication data in your cloud instance, allowing you to be free of relying on third party services to manage your data.</Description>
+	<Copyright>Copyright ©2019 Nausherwan Korai</Copyright>
+	<PackageTags>Auth Authentication User Management Library .NET NetStandard Identity</PackageTags>
+	<PackageProjectUrl>https://github.com/nkorai/DiyAuth</PackageProjectUrl>
+	<PackageLicenseUrl>https://github.com/nkorai/DiyAuth/blob/master/LICENSE</PackageLicenseUrl>
+	<RepositoryUrl>https://github.com/nkorai/DiyAuth</RepositoryUrl>
+	<RepositoryType>GitHub</RepositoryType>
+	<PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+	<PackageReleaseNotes>Bug fixes</PackageReleaseNotes>
   </PropertyGroup>
 
   <ItemGroup>
