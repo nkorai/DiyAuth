@@ -1,11 +1,7 @@
 ﻿using DiyAuth.AuthenticationProviders;
 using DiyAuth.EmailProviders.EmailHelpers.Mailgun;
 using DiyAuth.Properties;
-using SendGrid;
-using SendGrid.Helpers.Mail;
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -75,7 +71,7 @@ namespace DiyAuth.EmailProviders
 			var identityEntity = await this.AuthenticationProvider.GetIdentityByEmail(emailAddress).ConfigureAwait(false);
 
 			var verificationToken = await this.AuthenticationProvider.GenerateVerificationToken(identityEntity.IdentityId);
-			var verificationTokenLink = this.ForgotPasswordRedirectUri.AbsoluteUri.Trim('/') +  "/" + verificationToken;
+			var verificationTokenLink = this.ForgotPasswordRedirectUri.AbsoluteUri + verificationToken;
 
 			var content = this.ForgotPasswordEmailTemplate;
 			content = content.Replace("##__Subject__##", subject);
@@ -92,7 +88,7 @@ namespace DiyAuth.EmailProviders
 			var identityEntity = await this.AuthenticationProvider.GetIdentityById(identityId).ConfigureAwait(false);
 
 			var verificationToken = await this.AuthenticationProvider.GenerateVerificationToken(identityEntity.IdentityId);
-			var verificationTokenLink = this.VerificationTokenRedirectUri.AbsoluteUri.Trim('/') + "/" + verificationToken;
+			var verificationTokenLink = this.VerificationTokenRedirectUri.AbsoluteUri + verificationToken;
 
 			var content = this.VerificationTokenEmailTemplate;
 			content = content.Replace("##__Subject__##", subject);
@@ -109,7 +105,7 @@ namespace DiyAuth.EmailProviders
 			var identityEntity = await this.AuthenticationProvider.GetIdentityById(identityId).ConfigureAwait(false);
 
 			var verificationToken = await this.AuthenticationProvider.GenerateVerificationToken(identityEntity.IdentityId);
-			var verificationTokenLink = this.TwoFactorAuthenticationRedirectUri.AbsoluteUri.Trim('/') + "/" + verificationToken;
+			var verificationTokenLink = this.TwoFactorAuthenticationRedirectUri.AbsoluteUri + verificationToken;
 
 			var content = this.TwoFactorAuthenticationEmailTemplate;
 			content = content.Replace("##__Subject__##", subject);
