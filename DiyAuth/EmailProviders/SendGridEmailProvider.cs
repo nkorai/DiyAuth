@@ -64,14 +64,14 @@ namespace DiyAuth.EmailProviders
 			var identityEntity = await this.AuthenticationProvider.GetIdentityByEmail(emailAddress).ConfigureAwait(false);
 
 			var verificationToken = await this.AuthenticationProvider.GenerateVerificationToken(identityEntity.IdentityId);
-			var verificationTokenLink = this.ForgotPasswordRedirectUri.AbsoluteUri.Trim('/') +  "/" + verificationToken;
+			var verificationTokenLink = this.ForgotPasswordRedirectUri.AbsoluteUri + verificationToken;
 
 			var content = this.ForgotPasswordEmailTemplate;
 			content = content.Replace("##__Subject__##", subject);
 			content = content.Replace("##__CompanyName__##", this.CompanyName);
 			content = content.Replace("##__VerificationTokenLink__##", verificationTokenLink);
 
-			var from = new EmailAddress(this.FromEmail);
+			var from = new EmailAddress(this.FromEmail, this.CompanyName);
 			var to = new EmailAddress(emailAddress);
 			var htmlContent = content;
 			var message = MailHelper.CreateSingleEmail(from, to, subject, null, htmlContent);
@@ -83,14 +83,14 @@ namespace DiyAuth.EmailProviders
 			var identityEntity = await this.AuthenticationProvider.GetIdentityById(identityId).ConfigureAwait(false);
 
 			var verificationToken = await this.AuthenticationProvider.GenerateVerificationToken(identityEntity.IdentityId);
-			var verificationTokenLink = this.VerificationTokenRedirectUri.AbsoluteUri.Trim('/') + "/" + verificationToken;
+			var verificationTokenLink = this.VerificationTokenRedirectUri.AbsoluteUri + verificationToken;
 
 			var content = this.VerificationTokenEmailTemplate;
 			content = content.Replace("##__Subject__##", subject);
 			content = content.Replace("##__CompanyName__##", this.CompanyName);
 			content = content.Replace("##__VerificationTokenLink__##", verificationTokenLink);
 
-			var from = new EmailAddress(this.FromEmail);
+			var from = new EmailAddress(this.FromEmail, this.CompanyName);
 			var to = new EmailAddress(identityEntity.EmailAddress);
 			var htmlContent = content;
 			var message = MailHelper.CreateSingleEmail(from, to, subject, null, htmlContent);
@@ -102,14 +102,14 @@ namespace DiyAuth.EmailProviders
 			var identityEntity = await this.AuthenticationProvider.GetIdentityById(identityId).ConfigureAwait(false);
 
 			var verificationToken = await this.AuthenticationProvider.GenerateVerificationToken(identityEntity.IdentityId);
-			var verificationTokenLink = this.TwoFactorAuthenticationRedirectUri.AbsoluteUri.Trim('/') + "/" + verificationToken;
+			var verificationTokenLink = this.TwoFactorAuthenticationRedirectUri.AbsoluteUri + verificationToken;
 
 			var content = this.TwoFactorAuthenticationEmailTemplate;
 			content = content.Replace("##__Subject__##", subject);
 			content = content.Replace("##__CompanyName__##", this.CompanyName);
 			content = content.Replace("##__VerificationTokenLink__##", verificationTokenLink);
 
-			var from = new EmailAddress(this.FromEmail);
+			var from = new EmailAddress(this.FromEmail, this.CompanyName);
 			var to = new EmailAddress(identityEntity.EmailAddress);
 			var htmlContent = content;
 			var message = MailHelper.CreateSingleEmail(from, to, subject, null, htmlContent);
