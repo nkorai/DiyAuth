@@ -4,7 +4,7 @@
 	<TargetFramework>netstandard2.0</TargetFramework>
 	<Platforms>x64</Platforms>
 	<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-	<Version>1.0.7.2</Version>
+	<Version>1.0.7.3</Version>
 	<Authors>Nausherwan Korai</Authors>
 	<PackageIconUrl>https://raw.githubusercontent.com/nkorai/DiyAuth/master/icon.jpg</PackageIconUrl>
 	<Description>DIY Auth is a project aimed at placing the control and responsibility of user authentication in your hands. It implements a simple authorization and authentication scheme following industry best practices that is plug-and-play to help you jump start your next project. Furthermore it stores your user's authentication data in your cloud instance, allowing you to be free of relying on third party services to manage your data.</Description>
