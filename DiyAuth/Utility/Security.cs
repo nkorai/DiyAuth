@@ -47,7 +47,7 @@ namespace DiyAuth.Utility
 				var tokenArray = new byte[199];
 				rng.GetBytes(tokenArray);
 				var token = Convert.ToBase64String(tokenArray);
-				token = Regex.Replace(token, "[\\/#?]+", ""); // Removing any characters not allowed in Azure TableStorage RowKeys
+				token = Regex.Replace(token, "[\\/#?+]+", "_"); // Removing any characters not allowed in Azure TableStorage RowKeys
 				return token;
 			}
 		}
